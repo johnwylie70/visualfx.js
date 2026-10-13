@@ -44,10 +44,10 @@ function neon(words, y, colour, size) {
 }
 
 function draw() {
-  background("#07060d")
+  background("#06080d")
   // A wall of bricks, almost too dark to see until the sign lights it.
   for (let row = 0; row < height / 22; row++) {
-    for (let col = -1; col < width / 60; col++) rect(col * 60 + (row % 2) * 30 + 2, row * 22 + 2, 56, 18, "#120f1c")
+    for (let col = -1; col < width / 60; col++) rect(col * 60 + (row % 2) * 30 + 2, row * 22 + 2, 56, 18, "#0f141c")
   }
   const size = Math.min(width / 4.6, height / 3.2)
   neon(signs[which][0], height * 0.32, "hotpink", size)

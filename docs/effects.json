@@ -3629,19 +3629,19 @@
    "#0a3a7a"
   ],
   "sunset": [
-   "#0a1030",
-   "#7a1a4a",
+   "#1a0a3a",
+   "#6a1a7a",
    "#e0407a",
    "#ff8a3a",
    "#ffd86a",
-   "#7a1a4a"
+   "#6a1a7a"
   ],
   "neon": [
-   "#00081a",
-   "#ff1a8c",
+   "#0a001a",
+   "#ff1ad9",
    "#1affea",
    "#f6ff1a",
-   "#1a6aff",
+   "#7a1aff",
    "#1affea"
   ],
   "candy": [
@@ -3650,7 +3650,7 @@
    "#8ad4ff",
    "#b8ffd0",
    "#fff0a0",
-   "#a0c0ff"
+   "#d0a0ff"
   ],
   "forest": [
    "#04140a",
@@ -3691,7 +3691,7 @@
   "aurora": [
    "#00ff9a",
    "#00b0ff",
-   "#2b6be2",
+   "#8a2be2",
    "#00ff9a"
   ],
   "gameboy": [

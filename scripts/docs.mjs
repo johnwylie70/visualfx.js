@@ -139,7 +139,7 @@ for (const name of todo) {
       g.clearRect(0, 0, W, H)
       if (!def || !def.backdrop) {
         const sky = g.createLinearGradient(0, 0, W, H)
-        sky.addColorStop(0, '#0b1030'); sky.addColorStop(1, '#3a0d3a')
+        sky.addColorStop(0, '#0b1030'); sky.addColorStop(1, '#3a0d20')
         g.fillStyle = sky
         g.fillRect(0, 0, W, H)
         for (const s of still) {
