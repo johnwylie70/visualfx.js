@@ -22,9 +22,9 @@ export async function picturesWithEffects() {
     text = text.replace(from, to)
   }
   change('/* DIAL_NAMES:END */', `/* DIAL_NAMES:END */\n/* EFFECT_NAMES:BEGIN */\nconst EFFECT_NAMES = ${JSON.stringify(await effectNames())}\n/* EFFECT_NAMES:END */`)
-  change(`const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js' }`, `const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js', effects: 'visualfx/visualfx.js' }`)
-  change(`const [{ THREE, addons }, soundLib, controlsLib] = await Promise.all([is3D ? loadThree() : {}, wantsSound && loadSibling('sound'), wantsControls && loadSibling('dials')])`,
-    `const wantsEffects = usesAny(code, EFFECT_NAMES)\n      const [{ THREE, addons }, soundLib, controlsLib, effectsLib] = await Promise.all([is3D ? loadThree() : {}, wantsSound && loadSibling('sound'), wantsControls && loadSibling('dials'), wantsEffects && loadSibling('effects')])`)
+  change(`const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js', scenes: 'scenes/scenes.js' }`, `const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js', scenes: 'scenes/scenes.js', effects: 'visualfx/visualfx.js' }`)
+  change(`const [{ THREE, addons }, soundLib, controlsLib, scenesLib] = await Promise.all([is3D ? loadThree() : {}, wantsSound && loadSibling('sound'), wantsControls && loadSibling('dials'), wantsScenes && loadSibling('scenes')])`,
+    `const wantsEffects = usesAny(code, EFFECT_NAMES)\n      const [{ THREE, addons }, soundLib, controlsLib, scenesLib, effectsLib] = await Promise.all([is3D ? loadThree() : {}, wantsSound && loadSibling('sound'), wantsControls && loadSibling('dials'), wantsScenes && loadSibling('scenes'), wantsEffects && loadSibling('effects')])`)
   change(`      let last = 0\n      let counted = 0`, `      // --- EFFECTS (glow, trails, kaleidoscope…): run by the graphics card over what the scene drew, each frame after its draw.
       let fx = null
       if (effectsLib) {

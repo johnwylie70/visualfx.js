@@ -1,5 +1,7 @@
 # What pictures.js needs
 
+Written against pictures.js a298ef5 (scenes on main).
+
 So that a scene can write `glow(1)` with nothing to load, as it writes `playNote("C4")` and `dial(…)`. Five small changes to `pictures.js`, one to `scripts/sync-siblings.mjs`, one line in `package.json`. `scripts/serve.mjs` in this repository makes the five to pictures.js's text on the way out (and stops with a plain message if pictures.js has moved on), so the tests and every demo here already run on exactly this.
 
 ## pictures.js
@@ -17,16 +19,16 @@ None of them is a name pictures.js, synths.js or dials.js already gives a scene 
 **2. Where it is**, in `SIBLINGS`:
 
 ```js
-const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js', effects: 'visualfx/visualfx.js' }
+const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js', scenes: 'scenes/scenes.js', effects: 'visualfx/visualfx.js' }
 ```
 
-(and `loadSibling`'s message has a third word: `which === 'sound' ? 'sound' : which === 'effects' ? 'effects' : 'on-screen controls'`.)
+(and `loadSibling`'s message has one more word: `which === 'effects' ? 'effects'` beside `'scenes'`.)
 
 **3. Loaded only for a scene that uses one**, in `start()`:
 
 ```js
 const wantsEffects = usesAny(code, EFFECT_NAMES)
-const [{ THREE, addons }, soundLib, controlsLib, effectsLib] = await Promise.all([is3D ? loadThree() : {}, wantsSound && loadSibling('sound'), wantsControls && loadSibling('dials'), wantsEffects && loadSibling('effects')])
+const [{ THREE, addons }, soundLib, controlsLib, scenesLib, effectsLib] = await Promise.all([is3D ? loadThree() : {}, wantsSound && loadSibling('sound'), wantsControls && loadSibling('dials'), wantsScenes && loadSibling('scenes'), wantsEffects && loadSibling('effects')])
 ```
 
 and in `sceneUses`: `effects: usesAny(code, EFFECT_NAMES)`, so `pictures build` copies the `visualfx` folder for a scene that needs it.
@@ -69,3 +71,7 @@ That `dt` is the effects' whole clock. It is the one the scene's `update` was gi
 ## One thing in dials.js
 
 `onlyCanvas()` there counts every canvas that is not its own layer, so on a page of your own (not in pictures.js, which names the canvas) `dial(…)` after an effect is on finds two canvases and says so. Its filter should also leave out `c.dataset.effectsLayer !== undefined`. visualfx.js's own `onlyCanvas()` already leaves dials.js's layer out.
+
+## Scenes and effects together (not yet looked after)
+
+A program in several scenes (`scenes/scenes.js`) lays a canvas of its own over the scene's while one scene changes to the next, showing a copy of the scene's own canvas. That copy has no effects on it, and the layer is above the effects' canvas, so for the length of a transition the effects are not seen. The effects go on as before once it ends. The real integration should either hand the transition the effects' picture to copy, or put the transition's layer under the effects'.
