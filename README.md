@@ -194,7 +194,18 @@ const film = await recordVideo({ seconds: 5, fps: 60 })     // a WebM, every fra
 saveVideo(film, "my-scene.webm")
 ```
 
-`recordVideo` needs a browser that can encode video (Chrome, Edge, Safari). `renderFrames({ seconds, fps, onFrame })` gives the frames one at a time instead, each on a canvas, for you to do as you like with. Neither has sound in it.
+`recordVideo` needs a browser that can encode video (Chrome, Edge, Safari). `renderFrames({ seconds, fps, onFrame })` gives the frames one at a time instead, each on a canvas, for you to do as you like with.
+
+**With sound.** A film is made one frame at a time, and a frame may take far longer to draw than the sixtieth of a second it stands for, so sound that is playing through the loudspeaker cannot be what goes in the film. The scene's sound has to be made a frame at a time too, which [synths.js](https://github.com/johnwylie70/synths.js) can do: its stepped player has no sound card and makes exactly the samples up to the time it is told. Start the scene with stepped sound and give it to `recordVideo`:
+
+```js
+const scene = runScene(box, { src: "main.js", stepped: { fps: 60 } })     // pictures.js: the scene's sound is stepped
+await scene.ready
+const film = await recordVideo({ seconds: 20, fps: 60, sound: scene })     // or sound: a stepped player, or a function that gives one
+saveVideo(film, "my-scene.webm")
+```
+
+The film then has the sound in it (Opus), beginning on the first frame's first sample and ending with the last frame, and every sound is on the frame it was made in: a note the scene plays while it draws frame 90 begins at exactly a second and a half. What the effects hear is in step as well: `bass()`, `pulse()` and the spectrum are worked out from the sound up to the frame being drawn. `film.audio` says how it went: `"opus"`, or `"wav"` in a browser that cannot encode Opus, where the film is silent and `film.sound` is the sound as a WAV file of the same length (`saveVideo` saves both), or `null` for a scene that made no sound. Nothing is heard while the film is made. `renderFrames({ …, sound, onSound })` hands you the samples of each frame instead: `onSound(left, right, sampleRate, frame)`, exactly `sampleRate / fps` of them a frame with the remainder carried.
 
 ## How fast it is
 

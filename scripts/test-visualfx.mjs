@@ -658,6 +658,54 @@ setTimeout(async () => {
     check: (r) => (r.said ? /cannot make a video file|cannot encode/.test(r.said) && /renderFrames\(\)/.test(r.said)
       // A browser that can encode a WebM and cannot play one (Safari's engine here) is asked only for the file.
       : r.type === 'video/webm' && r.size > 2000 && r.head === '26,69,223,163' && (r.unplayable || (r.w === (r.cw & ~1) && r.h === (r.ch & ~1) && Math.abs(r.seconds - 1) < 0.05 && r.corner[2] > 90 && r.corner[0] < 40 && r.ball[0] > 200 && r.ball[2] < 120))) },
+  { what: 'a stepped sound is moved with the frames, a frame\'s worth of samples for each, and recordVideo puts it in the film as Opus with every sound where its frame is and the film\'s own length (or beside it as a WAV file, where the browser cannot encode Opus)',
+    // A stepped sound of the test's own, shaped like synths.js's stepped player: a short click each time the clock passes a half second.
+    source: `const { renderFrames, recordVideo } = await use("/pictures/visualfx/visualfx.js")\nfunction draw() { background("navy") }
+function stepper() {
+  let start = 0, made = 0
+  const heard = new Set(), rate = 48000
+  return { stepped: { sampleRate: rate, fps: 30, get samples() { return made }, startAt(s) { start = s - made / rate },
+    take() { return { left: new Float32Array(0), right: new Float32Array(0), length: 0, sampleRate: rate } },
+    onAdvance(fn) { heard.add(fn); return () => heard.delete(fn) },
+    async advance(seconds) {
+      const to = Math.round((seconds - start) * rate), count = to - made
+      if (count <= 0) return 0
+      const left = new Float32Array(count)
+      for (let i = 0; i < count; i++) { const k = (made + i) % 24000; if (k < 240) left[i] = 0.9 * Math.sin(k * 0.5) }
+      made = to
+      for (const fn of heard) fn(left, left.slice(), rate)
+      return count
+    } } }
+}
+setTimeout(async () => {
+  try {
+    const each = []
+    await renderFrames({ frames: 7, fps: 30, sound: stepper(), onSound: (left, right, rate, frame) => each.push([left.length, right.length, rate, frame]) })
+    const odd = []
+    await renderFrames({ frames: 1001, fps: 30000 / 1001, sound: stepper(), onFrame: () => {}, onSound: (left) => odd.push(left.length) })
+    const film = await recordVideo({ seconds: 2, fps: 30, sound: stepper() })
+    const silent = await recordVideo({ seconds: 0.5, fps: 30 })
+    let found = null
+    if (film.audio === "opus") {
+      try {
+        const sound = await new OfflineAudioContext(2, 48000, 48000).decodeAudioData(await film.arrayBuffer())
+        const samples = sound.getChannelData(0), starts = []
+        let quiet = 2000
+        for (let i = 0; i < samples.length; i++) { if (Math.abs(samples[i]) > 0.25) { if (quiet >= 2000) starts.push(i); quiet = 0 } else quiet++ }
+        found = { length: sound.length, rate: sound.sampleRate, starts }
+      } catch (e) { found = { undecodable: String(e && e.message || e) } }
+    }
+    window.result = { each, odd: [odd.length, odd.reduce((a, b) => a + b, 0), Math.min(...odd), Math.max(...odd)], audio: film.audio, samples: film.samples, rate: film.sampleRate, wav: film.sound ? film.sound.size : 0, found, size: film.size, silent: [silent.audio, silent.samples, !!silent.sound] }
+  } catch (e) { window.result = { said: e.message } }
+}, 0)`,
+    check: (r) => (r.said ? /cannot make a video file|cannot encode/.test(r.said)
+      // Seven frames at thirty a second: 1600 samples after each. 1001 frames at 29.97 (1601.6 samples each): 1 603 202 samples, 1601 or 1602 a frame.
+      : r.each.length === 7 && r.each.every(([left, right, rate, frame], i) => left === 1600 && right === 1600 && rate === 48000 && frame === i) && r.odd[0] === 1001 && r.odd[1] === 1603202 && r.odd[2] === 1601 && r.odd[3] === 1602
+        && r.samples === 96000 && r.rate === 48000 && r.silent[0] === null && r.silent[1] === 0 && !r.silent[2]
+        && (r.audio === 'opus'
+          // Where the browser can read its own film back, each click is where it was made (Opus keeps the place to within a millisecond) and the sound is as long as the film.
+          ? (r.found.undecodable ? true : r.found.starts.length === 4 && r.found.starts.every((at, i) => Math.abs(at - i * 24000) <= 48) && Math.abs(r.found.length - 96000) <= 1)
+          : r.audio === 'wav' && r.wav === 44 + 96000 * 4)) },
 ]
 
 let failed = 0, ran = 0
