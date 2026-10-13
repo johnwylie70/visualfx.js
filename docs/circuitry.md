@@ -66,7 +66,9 @@ That is all pyvisualfx reads: `p.H_EFFECTS`, `p.JsRef`, `p.js` (to tell one run 
 **`canvas-renderer-script.ts` / `python-sound.ts`** (the page):
 - For a file that imports `pyvisualfx`, load `/pictures/visualfx/visualfx.js` as a module before the program starts (as scenes' module is), and make the effects for the canvas with it: `module.effects(canvas, { fresh: true, manual: true, sound: () => the sound kit's output(), under: () => (stage && stage.running ? stage.running.layer : null) })`. `sound` is what the effects listen to until the scene says; `under` is what lets a change of scene be seen through the effects.
 - `H.set(13, …)` with Pyctures' wrapper, exactly: every call goes to the effects, except `frame`, which is `(dt) => queueMicrotask(() => fx.frame(dt))`. The effects must run after the scene's keeper has painted a transition (`stage.caught()`), which happens once the batch is applied.
-- `fx.close()` where the dials' panel is closed (a run that ends, a run again).
+- As the app has it (told by its writer, 2026-10-13), in two ways that differ from Pyctures:
+  - `sound` is given to the effects only in a file that also imports `synths`. In a file with effects alone it is null: asking the sound kit for its output would load synths.js, which that file's policy does not name, and a refused request stops the program. So in the app the effects hear music only when the file imports `synths` too.
+  - There is no `fx.close()`: every run is a new page, and a stopped program's picture and dials stay where they are, so its effects do too.
 - The recorder: see above. The effects' canvas is `canvas[data-effects-layer]`, the next element after the scene's canvas (or after a transition's layer).
 
 **`detect.ts`** and **`CIRCUITRY_PROVIDED_MODULES`**: `pyvisualfx`, beside `synths` and `pydials`.
