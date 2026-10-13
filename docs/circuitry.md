@@ -60,6 +60,7 @@ The app runs Python scenes with its own port of Pyctures' two halves, so each th
 - `H_EFFECTS = 13   # the page's effects: the library pyvisualfx turns each on with one command (12 is the page's scenes)`. The sound button is 14.
 - `_State.__init__`: `self.dt = None`.
 - Where a frame's functions are called: `S.dt = dt` before them (the same `dt` `update(dt)` is given).
+- Where a file's functions are first called as it starts: `S.dt = 0.0` before them. What a file draws as it starts is a frame given no time, and the effects must be on it: it is the first picture of a run and the first frame of a film. (pyvisualfx 443a3eb and later runs the effects for a `dt` of 0; before that it wanted more than 0, and a host had to give the start a sliver of time.)
 - In `_reply`, straight after the `for end in S.ending: end()` loop: `S.dt = None`.
 That is all pyvisualfx reads: `p.H_EFFECTS`, `p.JsRef`, `p.js` (to tell one run from the next), `p.S.ending` (it appends one function, which sends `frame(dt)` as the frame's last command) and `p.S.dt`. Without `S.dt` it wraps `_call_frame_functions`, which the port may not have: give it `S.dt`.
 

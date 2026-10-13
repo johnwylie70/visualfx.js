@@ -17,7 +17,7 @@ H_EFFECTS = 13   # the page's effects: `from pyvisualfx import *` turns each on 
         _call_frame_functions(S.dt)
 ```
 
-with `dt = 0.0` among `_State`'s fields. Until then `pyvisualfx` reads the same number by wrapping `_call_frame_functions`, which works and is not pretty. Either way the effects' clock is the `dt` the scene's `update(dt)` is given, and the effects are run by the LAST command of each frame's batch (`frame(dt)`, added from `S.ending`), so they are stepped exactly with Python's frames: once a frame, after its drawing, however slow Python is.
+with `dt = None` among `_State`'s fields, `S.dt = None` after the `S.ending` loop in `_reply`, and `S.dt = 0.0` before the start's own call of the scene's functions (what a file draws as it starts is a frame given no time, and the effects are run on it). Until then `pyvisualfx` reads the same number by wrapping `_call_frame_functions`, which works and is not pretty. Either way the effects' clock is the `dt` the scene's `update(dt)` is given, and the effects are run by the LAST command of each frame's batch (`frame(dt)`, added from `S.ending`), so they are stepped exactly with Python's frames: once a frame, after its drawing, however slow Python is.
 
 ## src/pyctures/web/pyctures.js
 
