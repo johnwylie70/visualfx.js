@@ -1,6 +1,6 @@
 # What Pyctures needs
 
-**Done, on Pyctures' branch `effects`** (worktree `../pyctures-effects`): `H_EFFECTS = 13` (12 is scenes), `S.dt` (set for a frame, `None` otherwise), `effectsKeeper`, the `pyvisualfx` entry in both `LIBRARIES` tables, the copies under `web/visualfx/`, the worker's path, and `scripts/sync_libraries.py`. What follows is the record of the design.
+**Done, on Pyctures' branch `effects`** (worktree `../pyctures-effects`): `H_EFFECTS = 13` (12 is scenes), `S.dt` (set for a frame, `None` otherwise), the few lines of the page below, the `pyvisualfx` entry in both `LIBRARIES` tables, the copies under `web/visualfx/`, the worker's path, and `scripts/sync_libraries.py`. What follows is the record of the design.
 
 `from pyvisualfx import *` already works under `pyctures run` with no change to Pyctures: like pydials, the Python module carries `visualfx.js` and puts it in the page itself. These changes build it in, which a built page, a single-file page and Python in the browser need (there the module is one file with no `web/` folder beside it), and which makes the frame's clock exact without the module having to listen for it.
 
@@ -27,25 +27,26 @@ with `dt = 0.0` among `_State`'s fields. Until then `pyvisualfx` reads the same 
 pyvisualfx: { folder: 'visualfx', js: 'visualfx.js', py: 'pyvisualfx.py' },
 ```
 
-**A keeper**, beside `dialsKeeper` and the same shape (the module at once when the scene imports `pyvisualfx`, else loaded on the first command with the commands kept until then):
+**No keeper of its own.** The library is loaded before a scene that imports it starts (as the others are, from the import in the scene's own file), so the page's part is two places and a few lines. A keeper like `dialsKeeper`, which loads the library late, was written and taken out again: a single-file page with no effects must stay under the size Pyctures' tests hold it to, and the keeper cost more than there was room for.
 
-```js
-function effectsKeeper({ given = null, module = null, sound = null }) {
-  const made = (m, canvas) => m.effects(canvas, { fresh: true, manual: true, sound: sound ? () => sound.output() : null })
-  // … as dialsKeeper, with loadLibrary('pyvisualfx', given) and api.close()
-}
-```
-
-**In `createRenderer`**: a parameter `effects`, then
+**In `createRenderer`**: a parameter `effects` (a function that makes them for the canvas), then
 
 ```js
 const fx = effects ? effects(canvas) : null
-if (fx) H.set(13, fx)
+if (fx) H.set(13, new Proxy({}, { has: () => true, get: (_, n) => (n === 'frame' ? (dt) => queueMicrotask(() => fx.frame(dt)) : (...a) => fx[n](...a)) }))
 ```
 
-and `if (fx) fx.close()` where `panel.close()` is. In the scene's start: `effects: effectsKeeper({ given: this.opt.effects, module: libs.pyvisualfx, sound: this.sound })`, and the loop that fills `libs` passes `this.opt.effects` for `pyvisualfx`.
+and `if (fx) fx.close()` where `panel.close()` is. Python's `frame(dt)` is the last command of a batch, but it is run at the end of the turn: a change of scene paints its layer once the batch is applied (`stage.caught()`), and the effects must be given that.
 
-`sound` is what the effects listen to when the scene has not called `listen_to`: the page's own object for all the sound (`soundKeeper`'s `output()`, the one `sound_output().page` is), which has `samples()`.
+**Where a scene starts**:
+
+```js
+effects: libs.pyvisualfx && ((canvas) => libs.pyvisualfx.effects(canvas, { fresh: true, manual: true,
+  sound: () => this.sound && this.sound.output && this.sound.output(),
+  under: () => this.stage && this.stage.running && this.stage.running.layer })),
+```
+
+`sound` is what the effects listen to when the scene has not called `listen_to`: the page's own object for all the sound, which has `samples()`. `under` is the old scene's picture while one scene changes to the next. A scene that imports `pyvisualfx` only in a second file of its own, not in the scene's file, is not given the effects: the import must be in the scene's file.
 
 **The copies**: `web/visualfx/visualfx.js` and `LICENSE` from this repository, `web/visualfx/pyvisualfx.py` from `pyvisualfx/src/pyvisualfx/__init__.py` (one file: the table of effects is inside it), by the script that copies the other two libraries; `pages.py`'s list of files and `single_page`'s `visualfx: {js, py}`.
 

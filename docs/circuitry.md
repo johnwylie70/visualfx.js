@@ -6,7 +6,7 @@ Found by reading Circuitry's source on 13 October 2026; none of it has been chan
 
 1. Run `scripts/sync-pictures.mjs` once pictures.js with effects is its main: `public/pictures/visualfx/` arrives with the rest, and the script must also write `SCENE_EFFECT_NAMES` into `scene-names.ts` and copy `pyvisualfx.py`.
 2. `scene.ts`: score the effects' names (Telling that a file is a scene).
-3. Python: `pyvisualfx` in `detect.ts` and `CIRCUITRY_PROVIDED_MODULES`; `H_EFFECTS = 13` and `S.dt` in `canvas-runtime-py.ts`; Pyctures' `effectsKeeper` in `sound-vendor.ts`; `<app>/pictures/visualfx/` in the Python preview's `script-src` for a file that imports it.
+3. Python: `pyvisualfx` in `detect.ts` and `CIRCUITRY_PROVIDED_MODULES`; `H_EFFECTS = 13` and `S.dt` in `canvas-runtime-py.ts`; the page's few lines for handle 13; `<app>/pictures/visualfx/` in the Python preview's `script-src` for a file that imports it.
 4. The Python recorder: draw the effects' canvas into the frame, a microtask after the frame's commands are applied (How its recorder works).
 5. The help pages (Words for the help pages), and the demos when the owner wants them.
 
@@ -44,7 +44,7 @@ So a recording reacts in step with nothing more to do here. The effects ask for 
 
 - `scripts/sync-pictures.mjs`: pictures.js's new `visualfx/` folder comes with the rest of `public/pictures/`; `scene-names.ts` gains `SCENE_EFFECT_NAMES` from the `EFFECT_NAMES` marks, wherever the other two lists are used (detecting a scene, completion).
 - `public/pictures/visualfx/pyvisualfx.py` from `../pyvisualfx/src/pyvisualfx/__init__.py`, as `pydials.py` is copied; `pyvisualfx` in `CIRCUITRY_PROVIDED_MODULES` and in `detect.ts` (a file that imports `pyvisualfx` is a scene).
-- `canvas-runtime-py.ts`: `H_EFFECTS = 13`, and `S.dt` (see docs/pyctures.md). `sound-vendor.ts` gains Pyctures' `effectsKeeper` beside the two it has.
+- `canvas-runtime-py.ts`: `H_EFFECTS = 13`, and `S.dt` (see docs/pyctures.md). The page's part is in the next section.
 
 ## The app's own Python runtime and page, piece by piece
 
@@ -54,7 +54,7 @@ The app runs Python scenes with its own port of Pyctures' two halves, so each th
 - `{ repo: 'pyvisualfx', file: 'src/pyvisualfx/__init__.py', to: 'public/pictures/visualfx/pyvisualfx.py' }`, beside the `pydials` line. `public/pictures/visualfx/visualfx.js` and its `LICENSE` come with pictures.js's folder.
 - A `pyvisualfx: { url: '/pictures/visualfx/pyvisualfx.py', tag }` entry where `pydials` has one, and the page's half at `/pictures/visualfx/visualfx.js`.
 - `SCENE_EFFECT_NAMES` into `scene-names.ts`, from pictures.js's `/* EFFECT_NAMES:BEGIN */ … /* EFFECT_NAMES:END */` marks, as the other lists are read.
-- `effectsKeeper` taken into `sound-vendor.ts` with `soundKeeper` and `dialsKeeper` (it is the function straight after `dialsKeeper` in pyctures.js, and uses `loadLibrary` as they do).
+- Nothing to take into `sound-vendor.ts`: Pyctures has no keeper for the effects (see docs/pyctures.md). The page's part is the few lines below.
 
 **`canvas-runtime-py.ts`** (the Python half):
 - `H_EFFECTS = 13   # the page's effects: the library pyvisualfx turns each on with one command (12 is the page's scenes)`. The sound button is 14.
@@ -64,7 +64,7 @@ The app runs Python scenes with its own port of Pyctures' two halves, so each th
 That is all pyvisualfx reads: `p.H_EFFECTS`, `p.JsRef`, `p.js` (to tell one run from the next), `p.S.ending` (it appends one function, which sends `frame(dt)` as the frame's last command) and `p.S.dt`. Without `S.dt` it wraps `_call_frame_functions`, which the port may not have: give it `S.dt`.
 
 **`canvas-renderer-script.ts` / `python-sound.ts`** (the page):
-- Make the effects for the canvas as the dials are made: `effectsKeeper({ given: '/pictures/visualfx/visualfx.js' address, module: the module when the file imports pyvisualfx, sound: () => the sound kit's output(), under: () => (stage && stage.running ? stage.running.layer : null) })(canvas)`. `sound` is what the effects listen to until the scene says; `under` is what lets a change of scene be seen through the effects.
+- For a file that imports `pyvisualfx`, load `/pictures/visualfx/visualfx.js` as a module before the program starts (as scenes' module is), and make the effects for the canvas with it: `module.effects(canvas, { fresh: true, manual: true, sound: () => the sound kit's output(), under: () => (stage && stage.running ? stage.running.layer : null) })`. `sound` is what the effects listen to until the scene says; `under` is what lets a change of scene be seen through the effects.
 - `H.set(13, …)` with Pyctures' wrapper, exactly: every call goes to the effects, except `frame`, which is `(dt) => queueMicrotask(() => fx.frame(dt))`. The effects must run after the scene's keeper has painted a transition (`stage.caught()`), which happens once the batch is applied.
 - `fx.close()` where the dials' panel is closed (a run that ends, a run again).
 - The recorder: see above. The effects' canvas is `canvas[data-effects-layer]`, the next element after the scene's canvas (or after a transition's layer).
