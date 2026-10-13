@@ -2,7 +2,7 @@
 
 Effects for a scene. Draw some shapes, then turn one on: a kaleidoscope, a glow, trails that spin away into a tunnel, an old television, a glitch. The graphics card does the work, so they are fast, and each is one line.
 
-![Sixty drifting shapes, folded by a kaleidoscope](docs/images/kaleidoscope.jpg)
+![Every effect and every look, each on the same small scene](docs/images/effects.jpg)
 
 It is a sibling of [pictures.js](https://www.circuitry.dev/pictures), [synths.js](../synths.js) and [dials.js](../dials.js), and works with any page that has a canvas. The Python version is [pyvisualfx](../pyvisualfx), for Pyctures.
 
@@ -83,66 +83,23 @@ function draw() { background() }     // with no colour: wipe the picture clear
 
 ## Every effect
 
-![Every effect and every look on the same small scene](docs/images/effects.jpg)
-
-| | What it does | The settings (the first is the one a plain number sets) |
-|---|---|---|
-| `kaleidoscope(8)` | One slice of the picture, folded round | `segments`, `angle`, `zoom`, `x`, `y` |
-| `mirror("left")` | One half shown on both sides | `side`: `"left"`, `"right"`, `"top"`, `"bottom"`, `"four"` |
-| `tile(3)` | The picture repeated | `across`, `down`, `flip` |
-| `pixelate(10)` | Big square pixels | `size` |
-| `waves(12)` | A flag in the wind | `size`, `length`, `speed` |
-| `ripple(8)` | Rings spreading from a point | `size`, `length`, `speed`, `x`, `y` |
-| `wobble(14)` | Heat haze, or water | `size`, `scale`, `speed` |
-| `swirl(180)` | The middle twisted round | `angle`, `radius`, `x`, `y` |
-| `fisheye(0.5)` | A bulge (below 0: a pinch). Also `bulge` | `strength`, `radius`, `x`, `y` |
-| `tunnel(0.4)` | The picture as the walls of a tunnel | `speed`, `repeat`, `depth`, `x`, `y` |
-| `blur(8)` | Out of focus | `radius` |
-| `zoomBlur(0.25)` | Rushing towards a point | `strength`, `x`, `y` |
-| `spinBlur(8)` | Spinning round a point | `angle`, `x`, `y` |
-| `glow(0.8)` | Bright things shine. Also `bloom` | `strength`, `threshold`, `radius` |
-| `trails(0.5)` | What was drawn stays, and fades | `length` (seconds to fade to a tenth), `zoom`, `spin`, `hue`, `dx`, `dy`, `x`, `y` |
-| `rgbSplit(4)` | Red and blue pulled apart | `size`, `angle`, `spread` |
-| `hue(90)` | Every colour moved round the wheel | `shift`, `speed` (degrees a second) |
-| `saturate(1.6)` | More colour (0: grey) | `strength` |
-| `brighten(1.3)`, `contrast(1.4)` | | `strength` |
-| `invert()` | A negative | |
-| `posterize(4)` | Only a few shades | `levels` |
-| `tint("gold")` | Seen through coloured glass | `colour` |
-| `duotone("midnightblue", "gold")` | Two colours: one for dark, one for light | `dark`, `light` |
-| `colourCycle("rainbow")` | Brightness becomes colour, and the colours move. Also `colorCycle` | `palette`, `speed`, `bands` |
-| `scanlines(0.5)` | Dark lines across | `strength`, `size` |
-| `crt(0.18)` | An old television: curved glass, lines, coloured stripes | `curve`, `lines`, `size` |
-| `glitch(0.5)` | Blocks that jump, a line that tears, snow | `strength`, `speed`, `seed` |
-| `grain(0.18)` | Film grain | `strength`, `size`, `seed` |
-| `vignette(0.6)` | Dark corners | `strength`, `size`, `colour` |
-| `edges(2)` | Only the outlines, in their own colours | `strength`, `size`, `fill` |
-| `dots(9)` | Printed in dots, as a comic is. Also `halftone` | `size`, `angle`, `paper` |
-| `letters(10)` | Made of marks, as an old terminal would show it | `size`, `colour`, `own` |
-| `plasma("sunset")` | Backdrop: slow rolling colour | `palette`, `speed`, `scale` |
-| `starfield(0.5)` | Backdrop: flying through stars | `speed`, `stars`, `colour`, `x`, `y` |
-| `metaballs("neon")` | Backdrop: blobs that melt together | `palette`, `speed`, `count`, `size` |
-| `flow("ocean")` | Backdrop: ink in water | `palette`, `speed`, `scale` |
-
-**And more**, by what they do. The same words mean the same thing everywhere: `strength` how much, `size` how big, `speed`, `angle`, `colour`, and `x`, `y` for a place.
+**[docs/effects.md](docs/effects.md) has them all**: ninety-four effects and sixteen looks, each with its picture, the line that turns it on in JavaScript and in Python, and its settings with where they start and how far they go. That page is written from the library's own table of effects, so it is never out of date.
 
 | | |
 |---|---|
-| Shapes of the picture | `droste(3)` the picture inside itself, for ever · `rotozoom(0.5)` turning, zooming tiles · `hexagons(14)` six-sided pixels · `glassTiles(40)` · `frosted(6)` frosted glass · `heatHaze(5)` · `caustics(0.5)` the light on the floor of a pool · `shake(10)` a quake: set `strength` when something hits and let it fall · `punch(0.15)` a zoom in, for a beat |
-| Blur and light | `motionBlur(24)` · `tiltShift(8)` a band in focus, the rest a toy town · `lightRays(0.7)` rays from a point (also `godRays`) · `streaks(0.6)` a film camera's long flares · `softFocus(0.6)` |
-| What was drawn stays | `smear(3)` wet paint carried on a current · `stutter(8)` only eight new pictures a second |
-| Colours | `gradientMap("sunset")` brightness becomes a palette · `thermal()` · `nightVision()` · `sepia()` · `threshold(0.5)` two colours and nothing between · `solarize(0.5)` · `colourBleed(10)` · `rainbowEdges(2)` |
-| Old computers | `dither("gameboy")` a few colours passing for many: `gameboy`, `c64`, `amiga`, `pico`, `mono`, or your own list · `interlace(0.6)` · `led(8)` a wall of lamps |
-| Drawn and painted | `emboss(2)` · `sharpen(1)` · `sketch(3)` pencil on paper · `cartoon(4)` flat colour and black outlines · `stainedGlass(40)` · `crosshatch(6)` · `oil(4)` paint (heavy: it looks at 36 places for every pixel) |
-| In front of the picture | `dust(0.5)` specks and scratches · `lightLeaks(0.6)` · `rain(0.6)` · `snow(0.8)` · `bokeh(0.5)` lamps out of focus · `fog(0.6)` · `lightning(1)` |
-| Backdrops | `warp("neon")` a tunnel · `voronoi("candy")` · `moire("white")` · `interference("ocean")` · `aurora()` · `fire()` · `clouds()` · `matrixRain()` · `copperBars()` and `twister()` from the demo scene · `checkerFloor()` |
-| The music, drawn | `spectrumBars()` · `spectrumRing()` · `waveformRing()` (all three are backdrops) · `beatFlash(0.5)` · `bassShake(14)` |
+| Shapes of the picture | `kaleidoscope`, `mirror`, `tile`, `pixelate`, `hexagons`, `waves`, `ripple`, `wobble`, `heatHaze`, `swirl`, `fisheye`, `tunnel`, `droste`, `rotozoom`, `glassTiles`, `frosted`, `caustics`, `shake`, `punch` |
+| Blur and light | `blur`, `zoomBlur`, `spinBlur`, `motionBlur`, `tiltShift`, `softFocus`, `glow`, `lightRays`, `streaks` |
+| What was drawn stays | `trails`, `smear`, `stutter` |
+| Colours | `hue`, `saturate`, `brighten`, `contrast`, `invert`, `posterize`, `tint`, `duotone`, `colourCycle`, `gradientMap`, `thermal`, `nightVision`, `sepia`, `threshold`, `solarize`, `rgbSplit`, `colourBleed`, `rainbowEdges` |
+| Screens and old computers | `scanlines`, `crt`, `interlace`, `glitch`, `dither`, `led`, `letters` |
+| Drawn, printed and painted | `edges`, `dots`, `emboss`, `sharpen`, `sketch`, `cartoon`, `stainedGlass`, `crosshatch`, `oil` |
+| In front of the picture | `vignette`, `grain`, `dust`, `lightLeaks`, `rain`, `snow`, `bokeh`, `fog`, `lightning` |
+| Backdrops that need no drawing | `plasma`, `flow`, `metaballs`, `starfield`, `warp`, `voronoi`, `moire`, `interference`, `aurora`, `fire`, `clouds`, `matrixRain`, `copperBars`, `checkerFloor`, `twister` |
+| The music, drawn | `spectrumBars`, `spectrumRing`, `waveformRing`, `beatFlash`, `bassShake` |
 
-More looks: `gameboy`, `c64`, `noir`, `comicbook`, `storm`, `winter`, `cinema`. That is ninety-four effects and sixteen looks; `effectNames()` and `lookNames()` list them, and `effect.settings` lists an effect's settings.
+The same words mean the same thing everywhere: `strength` how much, `size` how big, `speed`, `angle`, `colour`, and `x`, `y` for a place. Every effect also has `amount`. A palette is a name (`rainbow`, `fire`, `ocean`, `sunset`, `neon`, `candy`, `gameboy`, `c64` and more) or your own list of colours: `plasma(["navy", "magenta", "gold"])`. A colour is anything the page understands: `"gold"`, `"#ff8800"`. `effectNames()` and `lookNames()` list what there is, and `effect.settings` an effect's settings.
 
-Not here yet: transitions between two scenes, slit-scan (rows from older frames), echo copies, and effects on one sprite alone.
-
-Every effect also has `amount`. A palette is a name (`rainbow`, `fire`, `ocean`, `sunset`, `neon`, `candy`, `forest`, `ice`, `lava`, `mono`) or your own list of colours: `plasma(["navy", "magenta", "gold"])`. A colour is anything the page understands: `"gold"`, `"#ff8800"`.
+Not here yet: transitions between two scenes, slit-scan (rows from older frames), and effects on one sprite alone.
 
 **Trails** are how the classic screensaver tunnel is made: each frame is last frame's picture, a little bigger (`zoom`: 2 doubles its size every second), a little turned (`spin`, degrees a second) and a little changed in colour (`hue`), with this frame's drawing on top. They are measured in seconds, not frames, so a scene looks the same at 30 and at 120 frames a second. Trails want a dark background: only what is brighter than the trail is seen over it.
 
@@ -296,7 +253,7 @@ Each is a folder in [`demos/`](demos) with its code, a note and a picture taken 
 ```
 PLAYWRIGHT=/path/to/node_modules/playwright node scripts/test-visualfx.mjs     # the tests, in Chromium and WebKit
 PLAYWRIGHT=… node scripts/shots.mjs                                       # the demos' pictures
-PLAYWRIGHT=… node scripts/gallery.mjs                                     # the picture of every effect
+PLAYWRIGHT=… node scripts/docs.mjs                                        # docs/effects.md and a picture of every effect, from the table
 PLAYWRIGHT=… node scripts/measure.mjs                                     # what chains cost on this computer
 node scripts/serve.mjs                                                    # a server to try scenes on: /demo.html?d=demos/tunnel/main.js
 ```

@@ -14,7 +14,8 @@
  */
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { serve } from './serve.mjs'
+import { execFileSync } from 'node:child_process'
+import { serve, ROOT } from './serve.mjs'
 
 const from = process.env.PLAYWRIGHT || 'playwright'
 const playwright = await import(from.startsWith('/') ? pathToFileURL(join(from, 'index.mjs')).href : from)
@@ -693,6 +694,12 @@ for (const name of ['chromium', 'webkit']) {
   }
   check(name, 'no case left an error on its page', errors.length === 0, errors)
   await browser.close()
+}
+// The page of every effect is written from the table: it must be what the table gives now, with a picture for each.
+if (!only) {
+  let said = ''
+  try { execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs.mjs'), '--check'], { encoding: 'utf8' }) } catch (e) { said = (e.stdout || e.message).trim() }
+  check('docs', 'docs/effects.md, docs/effects.json and the pictures are what the table of effects gives', said === '', said)
 }
 close()
 console.log(failed ? `\n${failed} of ${ran} failed` : `\nall ${ran} passed`)
