@@ -36,7 +36,7 @@
 
 const version = '0.0.0'
 
-const LAYER = Symbol('effects')
+const LAYER = Symbol.for('effects.pipeline')
 let spare = null // the last scene's context and programs, for the next
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v)
 const isPlain = (v) => v != null && typeof v === 'object' && Object.getPrototypeOf(v) === Object.prototype
@@ -83,7 +83,7 @@ const PALETTES = {
   candy: ['#ff8ad4', '#ffd0e8', '#8ad4ff', '#b8ffd0', '#fff0a0', '#d0a0ff'],
   forest: ['#04140a', '#0e4a22', '#3a8a2a', '#a8d44a', '#f0f0a0', '#0e4a22'],
   ice: ['#020818', '#103a6a', '#4a9ae0', '#b8e8ff', '#ffffff', '#4a9ae0'],
-  lava: ['#100000', '#7a0000', '#ff3a00', '#ffb000', '#3a0000', '#000000'],
+  lava: ['#1a0000', '#8a0a00', '#ff3a00', '#ff9a00', '#ffe27a', '#ff5a00'],
   mono: ['#000000', '#ffffff'],
 }
 const palettes = new Map()
@@ -489,9 +489,10 @@ vec3 backdrop(vec2 uv) {
     float r = big * (0.07 + 0.035 * fract(k * 0.618));
     field += r * r / (dot(q - at, q - at) + 1e-4);
   }
-  vec3 c = palette(0.15 + 0.1 * min(field, 5.0) + t * 0.05);
+  // The colour runs through the palette once from a blob's edge to its heart, and never round to the start again.
+  vec3 c = palette(0.12 + 0.62 * smoothstep(0.4, 3.5, field));
   float inside = smoothstep(0.97, 1.03, field);
-  return c * mix(field * field * 0.3, 0.75 + 0.25 * min(field - 1.0, 1.0), inside);
+  return c * mix(field * field * 0.35, 1.0, inside);
 }`, { backdrop: true, rename: { size: 'big' } })
 define('flow', ['palette'], { palette: pal('ocean'), speed: num(0.2, -5, 5), scale: num(1, 0.1, 10) }, `
 vec3 backdrop(vec2 uv) {
@@ -697,7 +698,7 @@ class Effect {
     const [key, s] = this.setting(name)
     const d = { name: key, kind: s.kind === 'colour' || s.kind === 'palette' ? 'text' : s.kind, default: s.default }
     if (s.min !== undefined) { d.min = s.min; d.max = s.max }
-    if (s.place) { d.default = this.get(key) === this.values[key] ? this.pipe[key === 'y' ? 'H' : 'W'] / 2 : this.get(key); d.max = Math.max(1, d.default * 2) }
+    if (s.place) { const c = this.pipe.canvas; d.max = key === 'y' ? c.clientHeight || c.height : c.clientWidth || c.width; d.default = d.max / 2 }
     if (s.step) d.step = s.step
     if (s.unit) d.unit = s.unit === 'degrees' ? '°' : s.unit
     if (s.choices) d.choices = s.choices
@@ -752,6 +753,9 @@ class Pipeline {
     this.raf = 0
     this.counts = { textures: 0, framebuffers: 0, programs: 0 }
     this.passes = 0
+    this.told = null // a host's function for the music's numbers, called when it has answered the last (`ack`)
+    this.armed = true
+    this.toldLast = ''
     this.after = null // a host's function, called when a frame's picture is on the screen
     this.reset()
   }
@@ -1069,6 +1073,7 @@ class Pipeline {
     this.frames++
     if (!this.heard && this.sound) { this.heard = true; try { this.listener.listen(typeof this.sound === 'function' ? this.sound() : this.sound) } catch (e) { /* no sound after all */ } }
     this.listener.update(dt)
+    this.tell()
     const active = this.effects.filter((fx) => fx.active)
     if (!active.length || !this.canvas.width || !this.canvas.height) {
       if (this.layer && this.layer.style.display !== 'none') this.layer.style.display = 'none'
@@ -1090,6 +1095,17 @@ class Pipeline {
     }
     this.pool.push(...this.inUse.splice(0))
     if (this.after) this.after(this.api)
+  }
+
+  /** The music's numbers for a host that asked to be told (Python), when they have changed. */
+  tell() {
+    const l = this.listener
+    if (!this.told || !this.armed) return
+    const now = [l.bass, l.mids, l.highs, l.loudness, l.pulse].map((v) => Math.round(v * 1000) / 1000)
+    if (now.join() === this.toldLast) return
+    this.toldLast = now.join()
+    this.armed = false
+    this.told(now)
   }
 
   /** The picture on the screen as numbers, straight after a frame: { width, height, data } with four numbers a pixel, top row first. */
@@ -1373,6 +1389,9 @@ function api(pipe) {
     set(id, name, value) { const fx = made.get(id); if (fx) fx[camel(name)] = value },
     call(id, name) { const fx = made.get(id); if (fx && typeof fx[name] === 'function') fx[name]() },
     listen: (target) => out.listenTo(target),
+    /** The music's five numbers (bass, mids, highs, loudness, pulse) are told to `fn` when they change, once it has answered the last with ack(). */
+    report(fn) { pipe.told = fn; pipe.armed = true },
+    ack() { pipe.armed = true },
   })
   return out
 }
@@ -1389,6 +1408,16 @@ function effects(canvas, options) {
     pipe.api = api(pipe)
   }
   return pipe.api
+}
+/** Every effect and its settings, for a host that keeps a scene's code in another language. */
+effects.definitions = () => {
+  const out = {}
+  for (const name of NAMES) {
+    const def = DEFS[name], settings = {}
+    for (const key in def.settings) { const s = def.settings[key]; settings[key] = { kind: s.kind, default: s.default, ...(s.min !== undefined ? { min: s.min, max: s.max } : {}), ...(s.choices ? { choices: s.choices } : {}), ...(s.place ? { place: true } : {}) } }
+    out[name] = { order: def.order, settings, backdrop: !!def.backdrop }
+  }
+  return { effects: out, looks: Object.keys(LOOKS), palettes: Object.keys(PALETTES), aliases: { bloom: 'glow', colorCycle: 'colourCycle', bulge: 'fisheye', halftone: 'dots' } }
 }
 function onlyCanvas() {
   // A canvas laid over the scene's by this library or by dials.js is not the scene's.
