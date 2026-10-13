@@ -422,6 +422,23 @@ const cases = [
         && r.low.loudness > 0.5 && r.quietLow.bass > 0.8 && quiet(r.silent) && quiet(r.stopped) && quiet(r.broken) && quiet(r.level) && r.pair.bass > 0.8
     } },
 
+  { what: 'the sound is asked for nothing until something wants the music: a scene with effects and sound that does not use one costs its synths no reports',
+    run: async () => {
+      const { effects } = await import('/visualfx.js')
+      const a = card(32, 32, shapes)
+      let asked = 0
+      a.fx = effects(a.canvas, { manual: true, sound: () => ({ samples: () => { asked++; return new Float32Array(1024).fill(0.3) } }) })
+      a.fx.glow(1)
+      for (let i = 0; i < 5; i++) a.fx.frame(1 / 60)
+      const before = asked
+      const first = a.fx.bass()
+      for (let i = 0; i < 5; i++) a.fx.frame(1 / 60)
+      const out = { before, after: asked, first, loud: a.fx.loudness() }
+      done(a)
+      return out
+    },
+    check: (r) => r.before === 0 && r.after === 5 && r.first === 0 && r.loud > 0.2 },
+
   { what: 'a click every half second makes the pulse jump on each and fall away between them, and a setting tied to the bass follows it between the values given',
     run: async () => {
       const { effects } = await import('/visualfx.js')
