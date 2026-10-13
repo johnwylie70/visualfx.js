@@ -225,6 +225,8 @@ The effects themselves are cheap everywhere. **The hand-over is not, in Safari's
 - `effectsQuality(1)` is every pixel, `effectsQuality(0.5)` half each way.
 - Under a recorder's stepped clock nothing is ever late, so a recording keeps every pixel.
 
+**On a phone or a tablet the speed has not been measured.** What has been measured is Safari's engine on a Mac, at an iPad's pixels (2360 x 1640) and a phone's (1170 x 2532): 9 to 12 milliseconds a frame for a chain of effects at every pixel, and 5 to 6 with `effectsQuality("auto")`, where a frame at 60 a second has 16. A real iPad or iPhone has a slower graphics card than that Mac, so expect less; if a scene is slow there, `effectsQuality(0.5)` is the first thing to try, and fewer effects the second. (`node scripts/measure.mjs --browser=webkit --size=390x844 --ratio=3 --auto` is the phone's measurement.)
+
 A scene with no effect on has no second canvas and no graphics-card context: it costs what it did before. Blur and glow do their wide work on small copies of the picture; glow is judged pixel by pixel so small bright things do not flicker; a blurred slope has a grain too fine to see, so it has no bands; trails are kept in finer shades than the screen has, so they fade to black and not to mud.
 
 When a scene stops, everything it had on the graphics card is given back; the context and the compiled programs are kept for the next run, so running again is quick. If the graphics card takes the context away (a tablet does, to a tab in the background), the effects are made again when it comes back.
