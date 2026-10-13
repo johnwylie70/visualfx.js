@@ -22,7 +22,7 @@ var fxLayer = canvas.parentNode && canvas.parentNode.querySelector('canvas[data-
 if (fxLayer && fxLayer.width && fxLayer.style.display !== 'none') c.drawImage(fxLayer, 0, 0, rec.w, rec.h);
 ```
 
-It must be in the same task as the frame's commands were applied (the effects' canvas keeps its picture only until the browser next paints). If the copy is made later than that, ask the library instead: `effects(canvas).onFrame(fn)` calls `fn` at the moment each frame's picture is there, and `pixels()` reads it.
+The effects are run at the END of the turn in which a frame's commands are applied (a microtask: a change of scene paints its layer once the commands are applied, and the effects must be given that), so a copy made straight after applying the commands, in the same breath, is a frame early. Take the picture after a microtask (`await null`, or `queueMicrotask`), and before the browser next paints, when the effects' canvas no longer keeps it. If the copy is made later than that, ask the library instead: `effects(canvas).onFrame(fn)` calls `fn` at the moment each frame's picture is there, and `pixels()` reads it.
 
 ## Sound and picture in step
 
