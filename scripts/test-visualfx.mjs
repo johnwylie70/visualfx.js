@@ -598,8 +598,9 @@ const all = [...document.querySelectorAll("#s canvas")]
 window.result = { radius: b.radius, min: d.min, max: d.max, order: all.map((c) => c.dataset.effectsLayer !== undefined ? "effects" : c.dataset.dialsLayer !== undefined ? "dials" : "scene").join() }`,
     check: (r) => r.radius === 20 && r.min === 0 && r.max === 200 && r.order === 'scene,effects,dials' },
   { what: 'the effects see the frame the scene has just drawn, not the one before, and their clock is the scene\'s',
-    source: `const { effects } = await use("/pictures/visualfx/visualfx.js")\nlet n = 0, t = 0\nconst seen = []\nfunction update(dt) { t += dt }\nfunction draw() { n++; background(n % 2 ? "rgb(255,0,0)" : "rgb(0,0,255)") }\ninvert()
-effects(canvas).onFrame((fx) => { seen.push((n % 2 ? "red" : "blue") + ">" + (fx.pixels().data[0] < 128 ? "cyan" : "yellow")); if (seen.length === 6) window.result = { seen, t, clock: fx.stats().time } })`,
+    source: `const { effects } = await use("/pictures/visualfx/visualfx.js")\nlet n = 0, t = 0, began = null\nconst seen = []\nfunction update(dt) { t += dt }\nfunction draw() { n++; background(n % 2 ? "rgb(255,0,0)" : "rgb(0,0,255)") }\ninvert()
+effects(canvas).onFrame((fx) => { if (!n) return; seen.push((n % 2 ? "red" : "blue") + ">" + (fx.pixels().data[0] < 128 ? "cyan" : "yellow")); if (seen.length === 1) began = [t, fx.stats().time]; if (seen.length === 6) window.result = { seen, t: t - began[0], clock: fx.stats().time - began[1] } })`,
+    // The effects' clock may have begun a frame before the scene's own functions did: from then on they keep the same time.
     check: (r) => r.seen.every((s) => s === 'red>cyan' || s === 'blue>yellow') && new Set(r.seen).size === 2 && Math.abs(r.t - r.clock) < 1e-9 && r.t > 0 },
   { what: 'a scene that is stopped takes its effects with it: the canvas over the scene goes and nothing is left on the graphics card',
     source: `function draw() { background("black"); circle(100, 100, 30, "gold") }\nglow(1); trails(0.5); blur(3)\nfor (let i = 0; i < 4; i++) await frame()\nwindow.kept = ${layerOf}\nwindow.result = { layers: document.querySelectorAll("#s canvas").length }`,
