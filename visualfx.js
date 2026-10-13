@@ -1225,6 +1225,9 @@ class Pipeline {
     this.canvas = canvas
     this.manual = !!options.manual
     this.sound = options.sound || null // where the music comes from when a scene has not said (a host's)
+    // A host's function that gives a canvas laid over the scene's which is PART OF THE SCENE'S PICTURE (the old scene
+    // going out during a transition), or nothing. The effects are given the two together, and are shown over both.
+    this.under = options.under || null
     this.effects = []
     this.listener = new Listener()
     this.heard = false
@@ -1528,13 +1531,20 @@ class Pipeline {
     if (layer.style.width !== W + 'px') layer.style.width = W + 'px'
     if (layer.style.height !== H + 'px') layer.style.height = H + 'px'
     // Straight after the scene's canvas, under anything else laid over it (a dial is not blurred).
-    if (canvas.nextSibling !== layer) canvas.after(layer)
+    const below = this.over() || canvas
+    if (below.nextSibling !== layer) below.after(layer)
     if (w === this.w && h === this.h) return
     if (this.w) this.free()
     this.w = w; this.h = h
     layer.width = w
     layer.height = h
     this.main = [this.texture(w, h), this.texture(w, h)]
+  }
+
+  /** What is laid over the scene's canvas as part of its picture just now (see `under`), if anything is. */
+  over() {
+    if (!this.under) return null
+    try { const c = this.under(); return c && c.isConnected && c.width && c.height ? c : null } catch (e) { return null }
   }
 
   /**
@@ -1547,12 +1557,14 @@ class Pipeline {
     const gl = this.gl, c = this.canvas
     const t0 = performance.now()
     let from = c
-    if (this.w < c.width * 0.95) {
+    const over = this.over()
+    if (over || this.w < c.width * 0.95) {
       if (!this.small) this.small = document.createElement('canvas').getContext('2d')
       const s = this.small
       if (s.canvas.width !== this.w || s.canvas.height !== this.h) { s.canvas.width = this.w; s.canvas.height = this.h }
       s.globalCompositeOperation = 'copy'
       s.drawImage(c, 0, 0, this.w, this.h)
+      if (over) { s.globalCompositeOperation = 'source-over'; s.drawImage(over, 0, 0, this.w, this.h) }
       from = s.canvas
     }
     if (!this.input) this.input = this.texture(0, 0, { fbo: false })
@@ -2070,8 +2082,8 @@ effects.definitions = () => {
   return { effects: out, groups: [...Object.keys(GROUPS), 'More'], looks: Object.keys(LOOKS), recipes: LOOKS, lookAbout: LOOK_ABOUT, palettes: Object.keys(PALETTES), paletteColours: PALETTES, aliases: { bloom: 'glow', colorCycle: 'colourCycle', bulge: 'fisheye', halftone: 'dots', colorBleed: 'colourBleed', godRays: 'lightRays' } }
 }
 function onlyCanvas() {
-  // A canvas laid over the scene's by this library or by dials.js is not the scene's.
-  const found = [...document.querySelectorAll('canvas')].filter((c) => c.dataset.effectsLayer === undefined && c.dataset.dialsLayer === undefined)
+  // A canvas laid over the scene's by this library, by dials.js or for a change of scene is not the scene's.
+  const found = [...document.querySelectorAll('canvas')].filter((c) => c.dataset.effectsLayer === undefined && c.dataset.dialsLayer === undefined && !Object.keys(c.dataset).some((k) => /Transition$/.test(k)))
   if (found.length === 1) return found[0]
   throw new Error(found.length
     ? 'There is more than one canvas on this page, so say which one the effects are for: const { glow, trails } = effects(canvas)'

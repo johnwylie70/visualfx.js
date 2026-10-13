@@ -537,6 +537,34 @@ const cases = [
       return { whole: whole.w, half: half.w, shown: half.shown, same: differ(whole.p, half.p).mean, made, hidden, parts, left }
     },
     check: (r) => r.whole === 200 && r.half === 100 && r.shown === '200px' && r.same < 4 && r.made === 3 && r.parts.join() === '0.5,number' && r.left === 0 },
+  { what: 'a canvas a host lays over the scene as part of its picture (the old scene, during a transition) goes through the effects with it, and the effects are shown over both',
+    run: async () => {
+      const { effects } = await import('/visualfx.js')
+      const a = card(64, 64, (g) => { g.fillStyle = 'rgb(255,0,0)'; g.fillRect(0, 0, 64, 64) })
+      let over = null
+      a.fx = effects(a.canvas, { manual: true, under: () => over })
+      a.fx.invert()
+      a.fx.frame(1 / 60)
+      const alone = [at(a.fx.pixels(), 16, 32), at(a.fx.pixels(), 48, 32)]
+      // The left half of the old picture, half gone: blue at half strength over the red.
+      over = Object.assign(document.createElement('canvas'), { width: 64, height: 64 })
+      over.style.cssText = 'position:absolute;left:0;top:0;width:64px;height:64px'
+      const g = over.getContext('2d'); g.globalAlpha = 0.5; g.fillStyle = 'rgb(0,0,255)'; g.fillRect(0, 0, 32, 64)
+      a.canvas.after(over)
+      a.fx.frame(1 / 60)
+      const during = [at(a.fx.pixels(), 16, 32), at(a.fx.pixels(), 48, 32)]
+      const order = [...a.box.querySelectorAll('canvas')].map((c) => (c === a.canvas ? 'scene' : c === over ? 'old' : 'effects')).join()
+      over.remove()
+      a.fx.frame(1 / 60)
+      const after = at(a.fx.pixels(), 16, 32), then = [...a.box.querySelectorAll('canvas')].length
+      done(a)
+      return { alone, during, order, after, then }
+    },
+    check: (r) => {
+      const is = (c, to) => c.every((v, i) => near(v, to[i], 2))
+      return is(r.alone[0], [0, 255, 255]) && is(r.during[0], [127, 255, 127]) && is(r.during[1], [0, 255, 255]) && r.order === 'scene,old,effects' && is(r.after, [0, 255, 255]) && r.then === 2
+    } },
+
   { what: 'every effect and every look there is runs, changes the picture, leaves no error and is the same picture when the scene is stepped again',
     run: async () => {
       const { effects, effectNames, lookNames } = await import('/visualfx.js')
