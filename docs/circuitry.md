@@ -48,3 +48,30 @@ The frame-rate fix for iOS (the editor's `tick` serving `requestAnimationFrame`)
 ## The demos
 
 `demos/` here has eight folders in the shape of `public/demos/*` (`main.js`, five with `main.py`, `README.md`, `thumbnail.jpg` at 800 × 500), and `demos/index.json` has an entry for each in the form of `public/demos/index.json`. They are written as they will be once pictures.js gives a scene the effects: no `use(…)`. They have not been copied anywhere.
+
+## Telling that a file is a scene (`src/lib/pictures/scene.ts`)
+
+`scene-names.ts` should gain `SCENE_EFFECT_NAMES`, written by `scripts/sync-pictures.mjs` from pictures.js's `EFFECT_NAMES` marks, and `scene.ts` should score them as it scores the controls:
+
+- **Names of two words settle it alone**, in both spellings, as the sound's do (`zoomBlur`/`zoom_blur`, `rgbSplit`, `colourCycle`, `clearEffects`, `listenTo`, `effectsQuality`, `heatHaze`, `glassTiles`, `motionBlur`, `tiltShift`, `lightRays`, `softFocus`, `gradientMap`, `nightVision`, `colourBleed`, `rainbowEdges`, `stainedGlass`, `lightLeaks`, `matrixRain`, `copperBars`, `checkerFloor`, `spectrumBars`, `spectrumRing`, `waveformRing`, `beatFlash`, `bassShake`): the existing `twoWords` filter does this once the list is added to `SCENE_NAMES`.
+- **Distinctive single words are anchors** (count 2, and let ordinary ones beside them count): `kaleidoscope`, `pixelate`, `vignette`, `posterize`, `duotone`, `scanlines`, `crt`, `metaballs`, `starfield`, `plasma`, `halftone`, `crosshatch`, `droste`, `rotozoom`, `solarize`, `sepia`, `moire`, `voronoi`, `caustics`, `interlace`, `bokeh`, `twister`, `dither`, `bloom`.
+- **Ordinary words count only beside an anchor or a drawing name**: `mirror`, `waves`, `ripple`, `wobble`, `swirl`, `fisheye`, `bulge`, `tunnel`, `tile`, `hue`, `saturate`, `brighten`, `contrast`, `invert`, `tint`, `glitch`, `grain`, `edges`, `dots`, `letters`, `flow`, `blur`, `glow`, `trails`, `shader`, `look`, `react`, `bass`, `mids`, `highs`, `loudness`, `pulse`, `hexagons`, `frosted`, `shake`, `punch`, `streaks`, `smear`, `stutter`, `thermal`, `threshold`, `led`, `emboss`, `sharpen`, `sketch`, `cartoon`, `oil`, `dust`, `rain`, `snow`, `fog`, `lightning`, `warp`, `interference`, `aurora`, `fire`, `clouds`.
+
+A scene with effects nearly always has `draw`, `background` or a shape as well, which already say what it is; the list matters for a file that is only a backdrop (`plasma()` and nothing else: an anchor) or only `fire()` (an ordinary word: it needs `function draw` beside it).
+
+For Python, `detect.ts` needs `pyvisualfx` beside `synths` and `pydials` (a file that imports it is a scene), and `CIRCUITRY_PROVIDED_MODULES` needs it so nothing tries to install it.
+
+## Words for the help pages
+
+Two pages, one under pictures.js and one under Pyctures, each with the same shape as the libraries' own `docs/effects.md` (which can be taken as they are: every program on them is run by the libraries' tests), and the reference generated from `effects.definitions()` or `docs/effects.json` here, with the pictures in `docs/images/effects/`.
+
+Title: **Effects**. Summary line: *Glow, trails, a kaleidoscope, old screens, rain and ninety more, done by the graphics card to whatever your scene draws. One line turns one on.*
+
+Sections, in order: Turn one on · Change its settings · Several at once (order, trails, looks) · A picture with no drawing at all (backdrops, `background()`) · Music (`bass()`, `pulse()`, `react`) · With dials · With scenes (a change of scene is seen through the effects) · A shader of your own · How fast they are, and video · Every effect (the reference).
+
+Three things worth a callout box on the page, because they are what a beginner trips on:
+1. *A kaleidoscope shows one slice of your picture. If the screen goes dark, nothing was drawn in that slice.*
+2. *A backdrop is behind your drawing: use `background()` with no colour, or you will paint over it.*
+3. *Trails want a dark background.*
+
+And for Record Video: *Effects are in the recording, and are the same every time: they take their time from the scene's clock.* (For a Python scene this is true once the change at the top of this page is made.) The music's numbers (`bass()`, `pulse()`) are not yet in step with a recording's sound.

@@ -1,5 +1,7 @@
 # What pictures.js needs
 
+**Done, on pictures.js's branch `effects`** (worktree `../pictures.js-effects`), with the seam for scenes below made and tested. What follows is the record of what the integration is; `scripts/serve.mjs` here still makes the same edits to a pictures.js that does not have them yet, and is not needed once the branch is main.
+
 Written against pictures.js a298ef5 (scenes on main).
 
 So that a scene can write `glow(1)` with nothing to load, as it writes `playNote("C4")` and `dial(…)`. Five small changes to `pictures.js`, one to `scripts/sync-siblings.mjs`, one line in `package.json`. `scripts/serve.mjs` in this repository makes the five to pictures.js's text on the way out (and stops with a plain message if pictures.js has moved on), so the tests and every demo here already run on exactly this.
@@ -72,6 +74,10 @@ That `dt` is the effects' whole clock. It is the one the scene's `update` was gi
 
 `onlyCanvas()` there counts every canvas that is not its own layer, so on a page of your own (not in pictures.js, which names the canvas) `dial(…)` after an effect is on finds two canvases and says so. Its filter should also leave out `c.dataset.effectsLayer !== undefined`. visualfx.js's own `onlyCanvas()` already leaves dials.js's layer out.
 
-## Scenes and effects together (not yet looked after)
+## Scenes and effects together
 
-A program in several scenes (`scenes/scenes.js`) lays a canvas of its own over the scene's while one scene changes to the next, showing a copy of the scene's own canvas. That copy has no effects on it, and the layer is above the effects' canvas, so for the length of a transition the effects are not seen. The effects go on as before once it ends. The real integration should either hand the transition the effects' picture to copy, or put the transition's layer under the effects'.
+Measured before anything was done: during a transition the scenes' layer (the old scene's picture, with no effects on it) sat ABOVE the effects' canvas, and the effects were given only the new scene. So for the length of a transition the old picture was seen bare.
+
+The seam, agreed as the smallest that needs nothing of scenes.js: the host tells the effects what is laid over the scene's canvas as part of its picture, `effects(canvas, { under: () => changing?.running?.layer })`. While that gives a canvas, the effects are handed the scene's canvas with it drawn over (one more 2D copy a frame, only while a transition runs), and their own canvas is kept after it in the page. So the transition mixes the two pictures and the effects are done to the mix: trails carry across, a recorder that draws the canvases in order gets the right frame, and scenes.js is unchanged. pictures.js-effects `scripts/test-effects.mjs` and Pyctures' `tests/test_effects.py` hold a crossfade half way and measure it in both.
+
+Not done: a transition that is itself an effect (a dissolve, a ripple, a glitch cut). scenes.js already takes transitions by name from a host (`options.transitions`: `start({ from, to })`, `frame(progress)`, `end()`); visualfx.js would give those, with `from` as a second picture for a shader. That needs a second input in the pipeline.

@@ -1,5 +1,7 @@
 # What Pyctures needs
 
+**Done, on Pyctures' branch `effects`** (worktree `../pyctures-effects`): `H_EFFECTS = 13` (12 is scenes), `S.dt` (set for a frame, `None` otherwise), `effectsKeeper`, the `pyvisualfx` entry in both `LIBRARIES` tables, the copies under `web/visualfx/`, the worker's path, and `scripts/sync_libraries.py`. What follows is the record of the design.
+
 `from pyvisualfx import *` already works under `pyctures run` with no change to Pyctures: like pydials, the Python module carries `visualfx.js` and puts it in the page itself. These changes build it in, which a built page, a single-file page and Python in the browser need (there the module is one file with no `web/` folder beside it), and which makes the frame's clock exact without the module having to listen for it.
 
 ## src/pyctures/__init__.py
