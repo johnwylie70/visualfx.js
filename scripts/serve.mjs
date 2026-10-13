@@ -37,7 +37,14 @@ export async function picturesWithEffects() {
   return text
 }
 
+/** A page that runs one scene full size: /demo.html?d=demos/tunnel/main.js */
+const DEMO = `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;overflow:hidden;background:#000"><div id="s" style="position:absolute;inset:0"></div>
+<script type="module">import { runScene } from '/pictures/pictures.js'
+window.problems = []
+window.scene = runScene(document.getElementById('s'), { src: new URLSearchParams(location.search).get('d'), keyboard: true, onError: (m, line) => window.problems.push(line ? 'line ' + line + ': ' + m : m) })</script>`
+
 export async function serve(pages = {}) {
+  pages = { '/demo.html': DEMO, ...pages }
   let pictures = null
   const server = createServer(async (req, res) => {
     const path = decodeURIComponent(new URL(req.url, 'http://x').pathname)

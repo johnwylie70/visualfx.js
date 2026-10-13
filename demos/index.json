@@ -1,0 +1,138 @@
+{
+ "version": 1,
+ "demos": [
+  {
+   "id": "kaleidoscope",
+   "title": "Kaleidoscope",
+   "summary": "Sixty drifting shapes folded into a pattern that never repeats. Move the mouse to move its middle; tap for more segments.",
+   "kind": "html",
+   "entry": "main.js",
+   "files": [
+    "main.js",
+    "main.py",
+    "README.md"
+   ],
+   "thumbnail": "thumbnail.jpg",
+   "version": 2026101301,
+   "tags": [
+    "effects"
+   ]
+  },
+  {
+   "id": "tunnel",
+   "title": "Tunnel",
+   "summary": "Five small stars and one line of trails make a tunnel of colour you fall through for ever. Move the mouse to steer.",
+   "kind": "html",
+   "entry": "main.js",
+   "files": [
+    "main.js",
+    "main.py",
+    "README.md"
+   ],
+   "thumbnail": "thumbnail.jpg",
+   "version": 2026101301,
+   "tags": [
+    "effects"
+   ]
+  },
+  {
+   "id": "neon-sign",
+   "title": "Neon Sign",
+   "summary": "Words drawn as plain outlines, and a glow that turns them into a sign in a dark street. One letter has a loose wire.",
+   "kind": "html",
+   "entry": "main.js",
+   "files": [
+    "main.js",
+    "README.md"
+   ],
+   "thumbnail": "thumbnail.jpg",
+   "version": 2026101301,
+   "tags": [
+    "effects"
+   ]
+  },
+  {
+   "id": "lava-lamp",
+   "title": "Lava Lamp",
+   "summary": "Nothing is drawn at all: the blobs are a backdrop the graphics card makes by itself. Four lines of effects.",
+   "kind": "html",
+   "entry": "main.js",
+   "files": [
+    "main.js",
+    "main.py",
+    "README.md"
+   ],
+   "thumbnail": "thumbnail.jpg",
+   "version": 2026101301,
+   "tags": [
+    "effects"
+   ]
+  },
+  {
+   "id": "arcade",
+   "title": "Arcade",
+   "summary": "The screen an arcade machine shows while it waits for a coin, on the curved glass of an old television.",
+   "kind": "html",
+   "entry": "main.js",
+   "files": [
+    "main.js",
+    "main.py",
+    "README.md"
+   ],
+   "thumbnail": "thumbnail.jpg",
+   "version": 2026101301,
+   "tags": [
+    "effects"
+   ]
+  },
+  {
+   "id": "visualiser",
+   "title": "Visualiser",
+   "summary": "A tune in four lines and a picture that moves to it: the bass swells the glow, each beat kicks the trails outward.",
+   "kind": "html",
+   "entry": "main.js",
+   "files": [
+    "main.js",
+    "README.md"
+   ],
+   "thumbnail": "thumbnail.jpg",
+   "version": 2026101301,
+   "tags": [
+    "effects"
+   ]
+  },
+  {
+   "id": "finger-paint",
+   "title": "Finger Paint",
+   "summary": "Draw with a finger or the mouse. Whatever you draw is mirrored four ways and glows, and slowly fades.",
+   "kind": "html",
+   "entry": "main.js",
+   "files": [
+    "main.js",
+    "README.md"
+   ],
+   "thumbnail": "thumbnail.jpg",
+   "version": 2026101301,
+   "tags": [
+    "effects"
+   ]
+  },
+  {
+   "id": "glitch-title",
+   "title": "Glitch Title",
+   "summary": "The title of a film taped off the television long ago: colour bars, big words and a tape that keeps slipping.",
+   "kind": "html",
+   "entry": "main.js",
+   "files": [
+    "main.js",
+    "main.py",
+    "README.md"
+   ],
+   "thumbnail": "thumbnail.jpg",
+   "version": 2026101301,
+   "tags": [
+    "effects"
+   ]
+  }
+ ]
+}

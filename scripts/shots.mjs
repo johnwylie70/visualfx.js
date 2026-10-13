@@ -16,13 +16,7 @@ import { serve, ROOT } from './serve.mjs'
 
 const from = process.env.PLAYWRIGHT || 'playwright'
 const playwright = await import(from.startsWith('/') ? pathToFileURL(join(from, 'index.mjs')).href : from)
-const { at, close } = await serve({
-  '/demo.html': `<!doctype html><body style="margin:0;overflow:hidden;background:#000"><div id="s" style="position:absolute;inset:0"></div>
-<script type="module">import { runScene } from '/pictures/pictures.js'
-const d = new URLSearchParams(location.search).get('d')
-window.problems = []
-window.scene = runScene(document.getElementById('s'), { src: d, onError: (m, line) => window.problems.push(line ? 'line ' + line + ': ' + m : m) })</script>`,
-})
+const { at, close } = await serve()
 // How long each is left to run before its picture, and anything it needs done to it first.
 const WAIT = { tunnel: 5, 'finger-paint': 6, 'lava-lamp': 3, visualiser: 4, arcade: 2.6, 'glitch-title': 2.2 }
 const only = process.argv.slice(2).filter((a) => !a.startsWith('-'))

@@ -714,9 +714,10 @@ class Effect {
 const EFFECT = {
   get(fx, name) {
     if (typeof name === 'symbol' || name in fx || OWN.has(name)) { const v = fx[name]; return typeof v === 'function' ? v.bind(fx) : v }
-    // A promise is tested for by asking for `then`: an effect is not one.
-    if (name === 'then' || name === 'toJSON') return undefined
-    return fx.get(name)
+    // Asking for something it does not have is how other code finds out what an effect is (a dial asks for
+    // onChange, a promise is tested for with `then`): that is answered with nothing. Setting one is a mistake, and is said.
+    const key = SPELLING[camel(name)] || camel(name)
+    return key in fx.def.settings ? fx.get(key) : undefined
   },
   set(fx, name, value) {
     if (name === 'active') { if (value) fx.on(); else fx.off() } else fx.set(name, value)
