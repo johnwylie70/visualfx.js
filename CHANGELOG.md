@@ -5,6 +5,7 @@
 The first version: effects for a scene, done by the graphics card (WebGL 2).
 
 - Thirty-seven effects, each one line to turn on: shapes of the picture (kaleidoscope, mirror, tile, pixelate, waves, ripple, wobble, swirl, fisheye, tunnel), blurs (blur, zoomBlur, spinBlur), glow, trails, colours (rgbSplit, hue, saturate, brighten, contrast, invert, posterize, tint, duotone, colourCycle), screens and print (scanlines, crt, glitch, grain, vignette, edges, dots, letters) and four backdrops that need no drawing (plasma, starfield, metaballs, flow).
+- Fifty-seven more: droste, rotozoom, hexagons, glassTiles, frosted, heatHaze, caustics, shake, punch, motionBlur, tiltShift, lightRays, streaks, softFocus, smear, stutter, gradientMap, thermal, nightVision, sepia, threshold, solarize, colourBleed, rainbowEdges, dither, interlace, led, emboss, sharpen, sketch, cartoon, stainedGlass, crosshatch, oil, dust, lightLeaks, rain, snow, bokeh, fog, lightning, and the backdrops warp, voronoi, moire, interference, aurora, fire, clouds, matrixRain, copperBars, checkerFloor, twister, spectrumBars, spectrumRing and waveformRing, with beatFlash and bassShake; seven more looks.
 - Settings are plain properties, in the scene's points and in degrees; a setting given a function is asked every frame; `amount`, `off()`, `on()`, `remove()`, `clearEffects()`.
 - Nine looks: dream, arcade, vhs, neon, comic, underwater, oldfilm, disco, terminal.
 - Music: `listenTo`, `bass`, `mids`, `highs`, `loudness`, `pulse`, `react`, and the spectrum and the wave for a shader.

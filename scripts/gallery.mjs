@@ -12,13 +12,16 @@ import { serve, ROOT } from './serve.mjs'
 
 const from = process.env.PLAYWRIGHT || 'playwright'
 const playwright = await import(from.startsWith('/') ? pathToFileURL(join(from, 'index.mjs')).href : from)
-const { at, close } = await serve({ '/blank.html': '<!doctype html><body style="margin:0;background:#16181d;font:600 13px system-ui;color:#eef0f4"><div id="all" style="display:grid;grid-template-columns:repeat(6,200px);gap:6px;padding:6px;width:max-content">' })
+const { at, close } = await serve({ '/blank.html': '<!doctype html><body style="margin:0;background:#16181d;font:600 13px system-ui;color:#eef0f4"><div id="all" style="display:grid;grid-template-columns:repeat(8,200px);gap:6px;padding:6px;width:max-content">' })
 const browser = await playwright.chromium.launch({ args: ['--mute-audio', '--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist'] })
-const page = await browser.newPage({ viewport: { width: 1250, height: 900 }, deviceScaleFactor: 2 })
+const page = await browser.newPage({ viewport: { width: 1680, height: 900 }, deviceScaleFactor: 2 })
+page.on('console', (m) => { if (m.type() === 'error') console.log(m.text()) })
+page.on('pageerror', (e) => console.log(e.message.slice(0, 500)))
 await page.goto(`${at}/blank.html`)
 await page.evaluate(async () => {
   const lib = await import('/vfx.js')
-  const BACKDROPS = ['plasma', 'starfield', 'metaballs', 'flow']
+  const table = lib.effects.definitions().effects
+  const BACKDROPS = Object.keys(table).filter((n) => table[n].backdrop)
   for (const n of [...lib.effectNames(), ...lib.lookNames().map((l) => `look:${l}`)]) {
     const cell = document.createElement('div')
     const c = Object.assign(document.createElement('canvas'), { width: 400, height: 260 })
@@ -39,8 +42,11 @@ await page.evaluate(async () => {
     }
     g.fillStyle = 'white'; g.font = 'bold 26px system-ui'; g.fillText('hello', 104, 76)
     const fx = lib.effects(c, { manual: true })
-    if (n.startsWith('look:')) fx.look(n.slice(5)); else fx[n]()
-    for (let i = 0; i < 24; i++) fx.frame(1 / 30)
+    try { if (n.startsWith('look:')) fx.look(n.slice(5)); else fx[n]() } catch (e) { console.error(n + ': ' + e.message.slice(0, 400)) }
+    // A made-up tune, so the effects that draw the music have something to draw.
+    let heard = 0
+    fx.listenTo({ samples: () => Float32Array.from({ length: 1024 }, (_, i) => { const t = (heard + i) / 48000; return 0.4 * Math.sin(t * 440) * Math.exp(-((t * 4) % 1) * 5) + 0.25 * Math.sin(t * 2800) + 0.15 * Math.sin(t * 17000) }) })
+    for (let i = 0; i < 24; i++) { heard += 1600; try { fx.frame(1 / 30) } catch (e) { console.error(n + ': ' + e.message.slice(0, 400)); break } }
     const p = fx.pixels()
     fx.close()
     // Kept on the plain canvas: a page may hold only a few of the graphics card's.
@@ -50,7 +56,7 @@ await page.evaluate(async () => {
 })
 const png = join(ROOT, 'docs', 'images', 'effects.png')
 await (await page.$('#all')).screenshot({ path: png })
-execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '82', '-Z', '1800', png, '--out', join(ROOT, 'docs', 'images', 'effects.jpg')], { stdio: 'ignore' })
+execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '82', '-Z', '2400', png, '--out', join(ROOT, 'docs', 'images', 'effects.jpg')], { stdio: 'ignore' })
 await rm(png)
 await browser.close()
 close()

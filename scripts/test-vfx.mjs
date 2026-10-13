@@ -536,6 +536,37 @@ const cases = [
       return { whole: whole.w, half: half.w, shown: half.shown, same: differ(whole.p, half.p).mean, made, hidden, parts, left }
     },
     check: (r) => r.whole === 200 && r.half === 100 && r.shown === '200px' && r.same < 4 && r.made === 3 && r.parts.join() === '0.5,number' && r.left === 0 },
+  { what: 'every effect and every look there is runs, changes the picture, leaves no error and is the same picture when the scene is stepped again',
+    run: async () => {
+      const { effects, effectNames, lookNames } = await import('/vfx.js')
+      const table = effects.definitions().effects
+      const bad = []
+      let count = 0
+      const film = (name) => {
+        const a = card(320, 240, table[name] && table[name].backdrop ? (g) => { g.fillStyle = 'gold'; g.fillRect(10, 10, 20, 20) } : shapes)
+        a.fx = effects(a.canvas, { manual: true })
+        let n = 0
+        a.fx.listenTo({ samples: () => Float32Array.from({ length: 1024 }, (_, i) => { const t = (n + i) / 48000; return 0.4 * Math.sin(t * 440) * Math.exp(-((t * 4) % 1) * 5) + 0.25 * Math.sin(t * 2800) }) })
+        const before = a.fx.pixels()
+        if (name.startsWith('look:')) a.fx.look(name.slice(5)); else a.fx[name]()
+        for (let i = 0; i < 8; i++) { n += 800; a.fx.frame(1 / 60) }
+        const after = a.fx.pixels()
+        const out = { changed: differ(before, after).mean, sum: sum(after) }
+        done(a)
+        return out
+      }
+      for (const name of [...effectNames(), ...lookNames().map((l) => 'look:' + l)]) {
+        count++
+        try {
+          const one = film(name), two = film(name)
+          // Trails and a held frame change nothing in a picture that is standing still.
+          if (one.changed < 0.02 && !['trails', 'stutter', 'beatFlash', 'bassShake', 'lightning', 'dust'].includes(name)) bad.push(name + ' changed nothing')
+          if (one.sum !== two.sum) bad.push(name + ' is not the same twice')
+        } catch (e) { bad.push(name + ': ' + e.message.slice(0, 200)) }
+      }
+      return { bad, count }
+    },
+    check: (r) => r.bad.length === 0 && r.count > 100 },
 ]
 
 // --- scenes run by pictures.js, with the effects given to a scene as its other functions are

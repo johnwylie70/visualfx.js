@@ -69,7 +69,7 @@ Each effect has `off()`, `on()` and `remove()`, and `amount` from 0 to 1 for how
 look("arcade")          // the curved glass of an old arcade machine
 ```
 
-A look is several effects at once: `dream`, `arcade`, `vhs`, `neon`, `comic`, `underwater`, `oldfilm`, `disco`, `terminal`. It gives its parts back by name, so `look("vhs").glitch.strength = 1` works.
+A look is several effects at once: `dream`, `arcade`, `vhs`, `neon`, `comic`, `underwater`, `oldfilm`, `disco`, `terminal` and more below. It gives its parts back by name, so `look("vhs").glitch.strength = 1` works.
 
 ### 5. A picture with no drawing at all
 
@@ -123,6 +123,24 @@ function draw() { background() }     // with no colour: wipe the picture clear
 | `starfield(0.5)` | Backdrop: flying through stars | `speed`, `stars`, `colour`, `x`, `y` |
 | `metaballs("neon")` | Backdrop: blobs that melt together | `palette`, `speed`, `count`, `size` |
 | `flow("ocean")` | Backdrop: ink in water | `palette`, `speed`, `scale` |
+
+**And more**, by what they do. The same words mean the same thing everywhere: `strength` how much, `size` how big, `speed`, `angle`, `colour`, and `x`, `y` for a place.
+
+| | |
+|---|---|
+| Shapes of the picture | `droste(3)` the picture inside itself, for ever · `rotozoom(0.5)` turning, zooming tiles · `hexagons(14)` six-sided pixels · `glassTiles(40)` · `frosted(6)` frosted glass · `heatHaze(5)` · `caustics(0.5)` the light on the floor of a pool · `shake(10)` a quake: set `strength` when something hits and let it fall · `punch(0.15)` a zoom in, for a beat |
+| Blur and light | `motionBlur(24)` · `tiltShift(8)` a band in focus, the rest a toy town · `lightRays(0.7)` rays from a point (also `godRays`) · `streaks(0.6)` a film camera's long flares · `softFocus(0.6)` |
+| What was drawn stays | `smear(3)` wet paint carried on a current · `stutter(8)` only eight new pictures a second |
+| Colours | `gradientMap("sunset")` brightness becomes a palette · `thermal()` · `nightVision()` · `sepia()` · `threshold(0.5)` two colours and nothing between · `solarize(0.5)` · `colourBleed(10)` · `rainbowEdges(2)` |
+| Old computers | `dither("gameboy")` a few colours passing for many: `gameboy`, `c64`, `amiga`, `pico`, `mono`, or your own list · `interlace(0.6)` · `led(8)` a wall of lamps |
+| Drawn and painted | `emboss(2)` · `sharpen(1)` · `sketch(3)` pencil on paper · `cartoon(4)` flat colour and black outlines · `stainedGlass(40)` · `crosshatch(6)` · `oil(4)` paint (heavy: it looks at 36 places for every pixel) |
+| In front of the picture | `dust(0.5)` specks and scratches · `lightLeaks(0.6)` · `rain(0.6)` · `snow(0.8)` · `bokeh(0.5)` lamps out of focus · `fog(0.6)` · `lightning(1)` |
+| Backdrops | `warp("neon")` a tunnel · `voronoi("candy")` · `moire("white")` · `interference("ocean")` · `aurora()` · `fire()` · `clouds()` · `matrixRain()` · `copperBars()` and `twister()` from the demo scene · `checkerFloor()` |
+| The music, drawn | `spectrumBars()` · `spectrumRing()` · `waveformRing()` (all three are backdrops) · `beatFlash(0.5)` · `bassShake(14)` |
+
+More looks: `gameboy`, `c64`, `noir`, `comicbook`, `storm`, `winter`, `cinema`. That is ninety-four effects and sixteen looks; `effectNames()` and `lookNames()` list them, and `effect.settings` lists an effect's settings.
+
+Not here yet: transitions between two scenes, slit-scan (rows from older frames), echo copies, and effects on one sprite alone.
 
 Every effect also has `amount`. A palette is a name (`rainbow`, `fire`, `ocean`, `sunset`, `neon`, `candy`, `forest`, `ice`, `lava`, `mono`) or your own list of colours: `plasma(["navy", "magenta", "gold"])`. A colour is anything the page understands: `"gold"`, `"#ff8800"`.
 
