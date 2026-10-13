@@ -1,6 +1,16 @@
 # What Circuitry needs
 
-Found by reading Circuitry's source on 13 October 2026; none of it has been changed.
+Found by reading Circuitry's source on 13 October 2026; none of it has been changed. The effects themselves are in pictures.js and Pyctures on their `effects` branches (see docs/pictures.js.md and docs/pyctures.md), for a release after 2.1.0.
+
+**The whole list, in the order to do it** (each is explained below):
+
+1. Run `scripts/sync-pictures.mjs` once pictures.js with effects is its main: `public/pictures/visualfx/` arrives with the rest, and the script must also write `SCENE_EFFECT_NAMES` into `scene-names.ts` and copy `pyvisualfx.py`.
+2. `scene.ts`: score the effects' names (Telling that a file is a scene).
+3. Python: `pyvisualfx` in `detect.ts` and `CIRCUITRY_PROVIDED_MODULES`; `H_EFFECTS = 13` and `S.dt` in `canvas-runtime-py.ts`; Pyctures' `effectsKeeper` in `sound-vendor.ts`; `<app>/pictures/visualfx/` in the Python preview's `script-src` for a file that imports it.
+4. The Python recorder: draw the effects' canvas into the frame, a microtask after the frame's commands are applied (How its recorder works).
+5. The help pages (Words for the help pages), and the demos when the owner wants them.
+
+Nothing is needed for a JavaScript scene beyond step 1 and 2: it loads, runs and records as it is.
 
 ## How its recorder works, and what that means here
 
@@ -74,4 +84,4 @@ Three things worth a callout box on the page, because they are what a beginner t
 2. *A backdrop is behind your drawing: use `background()` with no colour, or you will paint over it.*
 3. *Trails want a dark background.*
 
-And for Record Video: *Effects are in the recording, and are the same every time: they take their time from the scene's clock.* (For a Python scene this is true once the change at the top of this page is made.) The music's numbers (`bass()`, `pulse()`) are not yet in step with a recording's sound.
+And for Record Video: *Effects are in the recording, and are the same every time: they take their time from the scene's clock.* (For a Python scene this is true once the recorder's change above is made.) Whether the music's numbers (`bass()`, `pulse()`) are in step with a recording's sound depends on the recorder stepping the sound: see Sound and picture in step.
