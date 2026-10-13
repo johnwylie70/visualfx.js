@@ -60,5 +60,5 @@ All on handle 13, each one `call`:
 | `react(id, name, band, { from, to })` | tie a setting to the music, in the page |
 | `listen(target)` | what the music is taken from: a reference to an object in the page |
 | `clearEffects()`, `effectsQuality(value)` | |
-| `report(fn)`, `ack()` | the music's five numbers, told to Python when they change and it has answered the last |
+| `report(fn)`, `ack()` | the music's five numbers, told to Python as `{ b: [bass, mids, highs, loudness, pulse] }` when they change and it has answered the last |
 | `frame(dt)` | the last command of every frame |
