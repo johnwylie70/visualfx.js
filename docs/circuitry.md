@@ -46,6 +46,39 @@ So a recording reacts in step with nothing more to do here. The effects ask for 
 - `public/pictures/visualfx/pyvisualfx.py` from `../pyvisualfx/src/pyvisualfx/__init__.py`, as `pydials.py` is copied; `pyvisualfx` in `CIRCUITRY_PROVIDED_MODULES` and in `detect.ts` (a file that imports `pyvisualfx` is a scene).
 - `canvas-runtime-py.ts`: `H_EFFECTS = 13`, and `S.dt` (see docs/pyctures.md). `sound-vendor.ts` gains Pyctures' `effectsKeeper` beside the two it has.
 
+## The app's own Python runtime and page, piece by piece
+
+The app runs Python scenes with its own port of Pyctures' two halves, so each thing Pyctures gained on its `effects` branch has a place in the app. In Pyctures they are in `src/pyctures/__init__.py` and `src/pyctures/web/pyctures.js`; take the text from there.
+
+**`scripts/sync-pictures.mjs`** (the copies and what is written from them):
+- `{ repo: 'pyvisualfx', file: 'src/pyvisualfx/__init__.py', to: 'public/pictures/visualfx/pyvisualfx.py' }`, beside the `pydials` line. `public/pictures/visualfx/visualfx.js` and its `LICENSE` come with pictures.js's folder.
+- A `pyvisualfx: { url: '/pictures/visualfx/pyvisualfx.py', tag }` entry where `pydials` has one, and the page's half at `/pictures/visualfx/visualfx.js`.
+- `SCENE_EFFECT_NAMES` into `scene-names.ts`, from pictures.js's `/* EFFECT_NAMES:BEGIN */ … /* EFFECT_NAMES:END */` marks, as the other lists are read.
+- `effectsKeeper` taken into `sound-vendor.ts` with `soundKeeper` and `dialsKeeper` (it is the function straight after `dialsKeeper` in pyctures.js, and uses `loadLibrary` as they do).
+
+**`canvas-runtime-py.ts`** (the Python half):
+- `H_EFFECTS = 13   # the page's effects: the library pyvisualfx turns each on with one command (12 is the page's scenes)`. The sound button is 14.
+- `_State.__init__`: `self.dt = None`.
+- Where a frame's functions are called: `S.dt = dt` before them (the same `dt` `update(dt)` is given).
+- In `_reply`, straight after the `for end in S.ending: end()` loop: `S.dt = None`.
+That is all pyvisualfx reads: `p.H_EFFECTS`, `p.JsRef`, `p.js` (to tell one run from the next), `p.S.ending` (it appends one function, which sends `frame(dt)` as the frame's last command) and `p.S.dt`. Without `S.dt` it wraps `_call_frame_functions`, which the port may not have: give it `S.dt`.
+
+**`canvas-renderer-script.ts` / `python-sound.ts`** (the page):
+- Make the effects for the canvas as the dials are made: `effectsKeeper({ given: '/pictures/visualfx/visualfx.js' address, module: the module when the file imports pyvisualfx, sound: () => the sound kit's output(), under: () => (stage && stage.running ? stage.running.layer : null) })(canvas)`. `sound` is what the effects listen to until the scene says; `under` is what lets a change of scene be seen through the effects.
+- `H.set(13, …)` with Pyctures' wrapper, exactly: every call goes to the effects, except `frame`, which is `(dt) => queueMicrotask(() => fx.frame(dt))`. The effects must run after the scene's keeper has painted a transition (`stage.caught()`), which happens once the batch is applied.
+- `fx.close()` where the dials' panel is closed (a run that ends, a run again).
+- The recorder: see above. The effects' canvas is `canvas[data-effects-layer]`, the next element after the scene's canvas (or after a transition's layer).
+
+**`detect.ts`** and **`CIRCUITRY_PROVIDED_MODULES`**: `pyvisualfx`, beside `synths` and `pydials`.
+
+**`preview-isolation-script.ts`**: for a Python file that imports `pyvisualfx`, `<app>/pictures/visualfx/` in `script-src` only, as `pythonSoundPreviewPolicy` adds the other two.
+
+## Web export
+
+**A JavaScript scene** (`src/lib/pictures/web-export/build-web-page.ts`): `sceneUses(source).effects` says whether to pack; the packed text is `visualfx/visualfx.js`, added to the `pictures-siblings` JSON as `effects`, and mapped as the others are: `imports[new URL('visualfx/visualfx.js', document.baseURI).href] = made(packed.effects)`. The file has no `import.meta.url` and loads nothing else (no wasm, no worker), so it packs as plain text; a check like the dials' one can look for `effectsLayer` in it.
+
+**A Python scene**: as synths and pydials are (refused today, per sound-in-preview.md); when that is done, Pyctures' `pages.single_page` packs it as `visualfx: { js, py }`.
+
 ## The sandbox and the policy
 
 Nothing in them stops the effects. The frame is `sandbox="allow-scripts"` with no origin; WebGL 2 needs neither an origin nor storage, shaders are text compiled by the browser (not script, so `script-src` hashes do not apply), and no worker, fetch or `eval` is used.
