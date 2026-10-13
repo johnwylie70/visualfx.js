@@ -1,0 +1,14 @@
+{
+  "name": "vfx.js",
+  "version": "0.0.0",
+  "description": "Effects for a scene, done by the graphics card: kaleidoscopes, glow, trails, blurs, old televisions, glitches and backdrops that need no drawing, each one line to turn on, with settings you can animate and tie to music. A sibling of pictures.js.",
+  "type": "module",
+  "main": "./vfx.js",
+  "module": "./vfx.js",
+  "exports": { ".": "./vfx.js", "./vfx.js": "./vfx.js" },
+  "files": ["vfx.js", "README.md", "CHANGELOG.md", "LICENSE"],
+  "engines": { "node": ">=20" },
+  "keywords": ["effects", "shaders", "webgl", "kaleidoscope", "bloom", "glow", "blur", "trails", "crt", "glitch", "canvas", "games", "education", "creative-coding", "demoscene"],
+  "author": "John Wylie",
+  "license": "MIT"
+}
