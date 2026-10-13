@@ -31,7 +31,7 @@ def update(dt):
 
 def draw():
     # Bars of colour, as a television shows when it has nothing else.
-    bars = ["#111d35", "#0c164f", "#ba1e68", "#4379fd", "#49b4fe", "#0c164f", "#111d35"]
+    bars = ["#1d1135", "#0c164f", "#ba1e68", "#5643fd", "#7649fe", "#0c164f", "#1d1135"]
     for i in range(len(bars)):
         rect(i * width / len(bars), 0, width / len(bars) + 1, height, bars[i])
     rect(0, height * 0.24, width, height * 0.52, "rgba(5, 5, 16, 0.86)")
