@@ -19,7 +19,7 @@ page.on('console', (m) => { if (m.type() === 'error') console.log(m.text()) })
 page.on('pageerror', (e) => console.log(e.message.slice(0, 500)))
 await page.goto(`${at}/blank.html`)
 await page.evaluate(async () => {
-  const lib = await import('/vfx.js')
+  const lib = await import('/visualfx.js')
   const table = lib.effects.definitions().effects
   const BACKDROPS = Object.keys(table).filter((n) => table[n].backdrop)
   for (const n of [...lib.effectNames(), ...lib.lookNames().map((l) => `look:${l}`)]) {

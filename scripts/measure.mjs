@@ -35,7 +35,7 @@ for (const name of ['chromium', 'webkit']) {
     const page = await browser.newPage({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: ratio })
     await page.goto(`${at}/blank.html`)
     const got = await page.evaluate(async ({ chains, ratio, quality }) => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const out = {}
       for (const [what, chain] of Object.entries(chains)) {
         const canvas = Object.assign(document.createElement('canvas'), { width: 1180 * ratio, height: 820 * ratio })

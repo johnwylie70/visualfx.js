@@ -7,7 +7,7 @@
 # blobs that melt into each other. The glow and the wobble are two more lines.
 # Use: move the mouse or a finger up and down to warm the lamp: the blobs move faster. Tap for other colours.
 # Try changing: "lava" to "neon", "ocean" or "candy"; 8, how many blobs; 1.3, their size; or try plasma() or flow() instead.
-from vfx import *
+from pyvisualfx import *
 
 palettes = ["lava", "neon", "ocean", "candy", "sunset"]
 which = 0

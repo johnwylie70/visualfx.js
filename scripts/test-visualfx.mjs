@@ -6,7 +6,7 @@
  * same pixels, that nothing is left on the graphics card when a scene stops, that a lost context comes
  * back, that the music's bands follow a made-up tone and a click, and scenes run by pictures.js.
  *
- *   PLAYWRIGHT=/path/to/node_modules/playwright node scripts/test-vfx.mjs
+ *   PLAYWRIGHT=/path/to/node_modules/playwright node scripts/test-visualfx.mjs
  *
  * pictures.js is taken from the folder beside this repository (or PICTURES=/path/to/pictures.js), with
  * the effects wired in as docs/pictures.js.md says (scripts/serve.mjs). Chromium, and WebKit when
@@ -66,7 +66,7 @@ const near = (a, b, by) => Math.abs(a - b) <= by
 const cases = [
   { what: 'a canvas with no effect on has no second canvas, no context and nothing on the graphics card',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(64, 64, shapes)
       a.fx = effects(a.canvas, { manual: true })
       a.fx.frame(1 / 60)
@@ -78,7 +78,7 @@ const cases = [
 
   { what: 'a kaleidoscope of four is the same turned a quarter and the same mirrored, and is not one flat colour',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(256, 256, shapes)
       a.fx = effects(a.canvas, { manual: true })
       a.fx.kaleidoscope(4)
@@ -97,7 +97,7 @@ const cases = [
 
   { what: 'eight segments: turning the picture an eighth of the way round changes almost nothing, and a twelfth changes a lot',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(256, 256, shapes)
       a.fx = effects(a.canvas, { manual: true })
       a.fx.kaleidoscope(8)
@@ -122,7 +122,7 @@ const cases = [
 
   { what: 'a blur takes most of the fine detail away and leaves the picture as bright as it was; a wider one takes more',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(256, 192, shapes)
       a.fx = effects(a.canvas, { manual: true })
       const before = a.fx.pixels()
@@ -140,7 +140,7 @@ const cases = [
 
   { what: 'a blurred slope from black to white has no bands: no step is more than one shade',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(512, 32, (g, w, h) => { const s = g.createLinearGradient(0, 0, w, 0); s.addColorStop(0, '#000'); s.addColorStop(1, '#404040'); g.fillStyle = s; g.fillRect(0, 0, w, h) })
       a.fx = effects(a.canvas, { manual: true })
       a.fx.blur(20)
@@ -158,7 +158,7 @@ const cases = [
 
   { what: 'hue turned a third of the way round makes red green, and two thirds makes it blue; invert, tint, duotone and posterize give the colours they should',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const one = async (paint, make) => {
         const a = card(16, 16, (g) => { g.fillStyle = paint; g.fillRect(0, 0, 16, 16) })
         a.fx = effects(a.canvas, { manual: true })
@@ -182,7 +182,7 @@ const cases = [
 
   { what: 'a trail fades to a tenth in the seconds it was given, at sixty frames a second and at thirty',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const fade = (fps) => {
         const a = card(64, 64, (g) => { g.fillStyle = '#fff'; g.fillRect(0, 0, 64, 64) })
         a.fx = effects(a.canvas, { manual: true })
@@ -206,7 +206,7 @@ const cases = [
 
   { what: 'a trail with zoom and spin moves what was drawn outward and round, and with nothing new drawn ends in black',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(128, 128, (g) => { g.fillStyle = '#000'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#fff'; g.fillRect(84, 60, 8, 8) })
       a.fx = effects(a.canvas, { manual: true })
       a.fx.trails(2, { zoom: 2, spin: 90 })
@@ -226,7 +226,7 @@ const cases = [
 
   { what: 'glow leaves a dark picture alone, spreads light round a bright thing, and does not flicker as that thing moves a fraction of a pixel',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const dark = card(128, 128, (g) => { g.fillStyle = '#202020'; g.fillRect(0, 0, 128, 128) })
       dark.fx = effects(dark.canvas, { manual: true })
       dark.fx.glow(1)
@@ -251,7 +251,7 @@ const cases = [
 
   { what: 'order matters, an effect that is off or has no amount changes nothing, and with every effect off the picture is the scene\'s own canvas again',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(96, 96, shapes)
       a.fx = effects(a.canvas, { manual: true })
       const before = a.fx.pixels()
@@ -283,7 +283,7 @@ const cases = [
 
   { what: 'the same scene stepped twice gives the very same pixels, frame for frame: backdrops, trails, glow, grain, glitches and all',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const film = (fps, frames, pick) => {
         const a = card(160, 120)
         a.fx = effects(a.canvas, { manual: true })
@@ -317,7 +317,7 @@ const cases = [
 
   { what: 'recorded at thirty frames a second and at sixty, the picture at the same moment is the same: exactly so without trails, and closely with them',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const film = (fps, trail) => {
         const a = card(160, 120)
         a.fx = effects(a.canvas, { manual: true })
@@ -348,7 +348,7 @@ const cases = [
 
   { what: 'nothing is left on the graphics card when a scene stops, however many times it is run, and a running scene holds the same from frame to frame',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const seen = []
       let steady = true, last = null
       for (let run = 0; run < 40; run++) {
@@ -370,7 +370,7 @@ const cases = [
 
   { what: 'when the graphics card takes its context away and gives it back, the effects are made again and the picture is as it was',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(128, 96, shapes)
       a.fx = effects(a.canvas, { manual: true })
       a.fx.kaleidoscope(6); a.fx.blur(4); a.fx.hue(80); a.fx.trails(0.3)
@@ -400,7 +400,7 @@ const cases = [
 
   { what: 'a low tone moves the bass and not the highs, a high tone the highs and not the bass, quiet music moves as much as loud, silence moves nothing, and with nothing to listen to there is no error',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const tone = (hz, loud = 0.5) => { let n = 0; return { samples: () => { const s = new Float32Array(1024); for (let i = 0; i < 1024; i++) s[i] = loud * Math.sin(2 * Math.PI * hz * (n + i) / 48000); n += 800; return s } } }
       const hear = (target, then) => {
         const a = card(32, 32, shapes)
@@ -423,7 +423,7 @@ const cases = [
 
   { what: 'a click every half second makes the pulse jump on each and fall away between them, and a setting tied to the bass follows it between the values given',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(32, 32, shapes)
       a.fx = effects(a.canvas, { manual: true })
       // A drum: a burst of 60 Hz that dies away, every half second, heard as the sound library gives it: the latest 1024 numbers.
@@ -450,7 +450,7 @@ const cases = [
 
   { what: 'a setting is a plain property, a function is asked every frame, an effect is something a dial can turn, and a wrong name or value is said in plain words',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(64, 64, shapes)
       a.fx = effects(a.canvas, { manual: true })
       const k = a.fx.kaleidoscope(6, { zoom: 2 })
@@ -479,7 +479,7 @@ const cases = [
 
   { what: 'a shader of your own is given the picture, its settings and its own last frame, and a mistake in it is said with its line',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const a = card(32, 32, (g) => { g.fillStyle = '#ff8000'; g.fillRect(0, 0, 32, 32) })
       a.fx = effects(a.canvas, { manual: true })
       const s = a.fx.shader('vec4 effect(vec2 uv) {\n  vec4 c = texture(picture, uv);\n  return vec4(c.b + lift, c.g, c.r, 1.0) * vec4(shade, 1.0);\n}', { lift: [0.25, 0, 1], shade: 'white' })
@@ -505,7 +505,7 @@ const cases = [
 
   { what: 'at half quality the effects work on a quarter of the pixels and the picture is still the same picture; a look turns several effects on and off together',
     run: async () => {
-      const { effects } = await import('/vfx.js')
+      const { effects } = await import('/visualfx.js')
       const shot = (q) => {
         const a = card(200, 160, shapes)
         a.fx = effects(a.canvas, { manual: true })
@@ -538,7 +538,7 @@ const cases = [
     check: (r) => r.whole === 200 && r.half === 100 && r.shown === '200px' && r.same < 4 && r.made === 3 && r.parts.join() === '0.5,number' && r.left === 0 },
   { what: 'every effect and every look there is runs, changes the picture, leaves no error and is the same picture when the scene is stepped again',
     run: async () => {
-      const { effects, effectNames, lookNames } = await import('/vfx.js')
+      const { effects, effectNames, lookNames } = await import('/visualfx.js')
       const table = effects.definitions().effects
       const bad = []
       let count = 0
@@ -586,19 +586,19 @@ const layerOf = `document.querySelector('#s canvas[data-effects-layer]')`
 const scenes = [
   { what: 'a scene that uses no effect is not sent the library at all',
     source: `function draw() { background("navy"); circle(100, 100, 30, "gold") }\nawait frame(); await frame(); window.result = { layers: document.querySelectorAll("#s canvas").length }`,
-    check: (r, asked) => r.layers === 1 && !asked.some((u) => /vfx/.test(u)) },
+    check: (r, asked) => r.layers === 1 && !asked.some((u) => /visualfx/.test(u)) },
   { what: 'a scene that calls kaleidoscope() is given it with nothing to load, in either spelling, and its picture is on a canvas over the scene\'s, the same size',
     source: `let n = 0\nfunction draw() { background("black"); circle(60 + n++, 60, 30, "gold") }\nconst k = kaleidoscope(6)\nzoom_blur(0.1)\nfor (let i = 0; i < 4; i++) await frame()
 const layer = ${layerOf}
 window.result = { layers: document.querySelectorAll("#s canvas").length, w: layer.width, h: layer.height, cw: canvas.width, ch: canvas.height, left: layer.offsetLeft === canvas.offsetLeft, shown: layer.style.display, segments: k.segments }`,
-    check: (r, asked) => r.layers === 2 && r.w === r.cw && r.h === r.ch && r.left && r.shown === 'block' && r.segments === 6 && asked.some((u) => /\/pictures\/vfx\/vfx\.js/.test(u)) },
+    check: (r, asked) => r.layers === 2 && r.w === r.cw && r.h === r.ch && r.left && r.shown === 'block' && r.segments === 6 && asked.some((u) => /\/pictures\/visualfx\/visualfx\.js/.test(u)) },
   { what: 'a dial turns an effect\'s setting, takes its range from the effect, and is drawn over the effects, not under them',
     source: `function draw() { background("black"); circle(200, 150, 60, "gold") }\nconst b = blur(4)\nconst d = dial("radius", b, "radius")\nfor (let i = 0; i < 4; i++) await frame()\nd.value = 20\nawait frame()
 const all = [...document.querySelectorAll("#s canvas")]
 window.result = { radius: b.radius, min: d.min, max: d.max, order: all.map((c) => c.dataset.effectsLayer !== undefined ? "effects" : c.dataset.dialsLayer !== undefined ? "dials" : "scene").join() }`,
     check: (r) => r.radius === 20 && r.min === 0 && r.max === 200 && r.order === 'scene,effects,dials' },
   { what: 'the effects see the frame the scene has just drawn, not the one before, and their clock is the scene\'s',
-    source: `const { effects } = await use("/pictures/vfx/vfx.js")\nlet n = 0, t = 0\nconst seen = []\nfunction update(dt) { t += dt }\nfunction draw() { n++; background(n % 2 ? "rgb(255,0,0)" : "rgb(0,0,255)") }\ninvert()
+    source: `const { effects } = await use("/pictures/visualfx/visualfx.js")\nlet n = 0, t = 0\nconst seen = []\nfunction update(dt) { t += dt }\nfunction draw() { n++; background(n % 2 ? "rgb(255,0,0)" : "rgb(0,0,255)") }\ninvert()
 effects(canvas).onFrame((fx) => { seen.push((n % 2 ? "red" : "blue") + ">" + (fx.pixels().data[0] < 128 ? "cyan" : "yellow")); if (seen.length === 6) window.result = { seen, t, clock: fx.stats().time } })`,
     check: (r) => r.seen.every((s) => s === 'red>cyan' || s === 'blue>yellow') && new Set(r.seen).size === 2 && Math.abs(r.t - r.clock) < 1e-9 && r.t > 0 },
   { what: 'a scene that is stopped takes its effects with it: the canvas over the scene goes and nothing is left on the graphics card',
@@ -606,15 +606,15 @@ effects(canvas).onFrame((fx) => { seen.push((n % 2 ? "red" : "blue") + ">" + (fx
     after: async (page) => page.evaluate(async () => { window.scene.stop(); await new Promise((r) => setTimeout(r, 50)); return { layers: document.querySelectorAll('#s canvas[data-effects-layer]').length, attached: window.kept.isConnected } }),
     check: (r, asked, after) => r.layers === 2 && after.layers === 0 && after.attached === false },
   { what: 'a page with no host to say when the scene has drawn (the library loaded by the scene itself) still shows each frame\'s own picture',
-    source: `const { invert, effects } = await use("/vfx.js")\nlet n = 0\nconst seen = []\nfunction draw() { n++; background(n % 2 ? "rgb(255,0,0)" : "rgb(0,0,255)") }\ninvert()
+    source: `const { invert, effects } = await use("/visualfx.js")\nlet n = 0\nconst seen = []\nfunction draw() { n++; background(n % 2 ? "rgb(255,0,0)" : "rgb(0,0,255)") }\ninvert()
 effects(canvas).onFrame((fx) => { seen.push((n % 2 ? "red" : "blue") + ">" + (fx.pixels().data[0] < 128 ? "cyan" : "yellow")); if (seen.length === 8) window.result = { seen, n } })`,
-    check: (r, asked) => r.seen.every((s) => s === 'red>cyan' || s === 'blue>yellow') && new Set(r.seen).size === 2 && r.n === 8 && !asked.some((u) => /pictures\/vfx/.test(u)) },
+    check: (r, asked) => r.seen.every((s) => s === 'red>cyan' || s === 'blue>yellow') && new Set(r.seen).size === 2 && r.n === 8 && !asked.some((u) => /pictures\/visualfx/.test(u)) },
   { what: 'a 3D scene\'s picture goes through the effects too',
-    source: `const { effects } = await use("/pictures/vfx/vfx.js")\nconst renderer = new THREE.WebGLRenderer({ canvas })\nconst scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 4 / 3, 0.1, 10)\ncamera.position.z = 3\nscene.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: "red" })))
+    source: `const { effects } = await use("/pictures/visualfx/visualfx.js")\nconst renderer = new THREE.WebGLRenderer({ canvas })\nconst scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 4 / 3, 0.1, 10)\ncamera.position.z = 3\nscene.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: "red" })))
 function draw() { renderer.render(scene, camera) }\nhue(120)\nlet n = 0\neffects(canvas).onFrame((fx) => { if (++n < 3) return; const p = fx.pixels(), at = (x, y) => [...p.data.slice((y * p.width + x) * 4, (y * p.width + x) * 4 + 3)]; window.result = { middle: at(p.width >> 1, p.height >> 1), corner: at(2, 2) } })`,
     check: (r) => r.middle[1] > 240 && r.middle[0] < 15 && r.corner[0] + r.corner[1] + r.corner[2] < 10 },
   { what: 'renderFrames steps the page a frame at a time, each exactly a thirtieth of a second after the last, and gives every picture with its effects; then the page has its own clock back',
-    source: `const { renderFrames, effects } = await use("/pictures/vfx/vfx.js")\nlet t = 0\nconst dts = []\nfunction update(dt) { t += dt; dts.push(dt) }\nfunction draw() { background("black"); rect(t * 120, 0, 40, 300, "rgb(255,0,0)") }\ninvert()
+    source: `const { renderFrames, effects } = await use("/pictures/visualfx/visualfx.js")\nlet t = 0\nconst dts = []\nfunction update(dt) { t += dt; dts.push(dt) }\nfunction draw() { background("black"); rect(t * 120, 0, 40, 300, "rgb(255,0,0)") }\ninvert()
 setTimeout(async () => {
   await new Promise((r) => setTimeout(r, 200))
   const edges = []
@@ -634,7 +634,7 @@ setTimeout(async () => {
     // The bar moves 120 points a second: 4 points a frame at thirty frames a second, whatever the real time between them.
     check: (r) => r.edges.length === 12 && r.edges.slice(1).every((x, i) => Math.abs(x - r.edges[i] - 4) <= 1) && r.steps.length === 12 && r.steps.every((d) => Math.abs(d - 1 / 30) < 1e-9) && r.after > 3 && r.native },
   { what: 'recordVideo gives a WebM film a player can open, of the right size and length, or says plainly that this browser cannot make one',
-    source: `const { recordVideo } = await use("/pictures/vfx/vfx.js")\nlet t = 0\nfunction update(dt) { t += dt }\nfunction draw() { background("navy"); circle(100 + t * 100, 150, 40, "gold") }\nglow(1)
+    source: `const { recordVideo } = await use("/pictures/visualfx/visualfx.js")\nlet t = 0\nfunction update(dt) { t += dt }\nfunction draw() { background("navy"); circle(100 + t * 100, 150, 40, "gold") }\nglow(1)
 setTimeout(async () => {
   try {
     const film = await recordVideo({ seconds: 1, fps: 30 })

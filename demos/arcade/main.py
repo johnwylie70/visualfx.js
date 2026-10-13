@@ -7,7 +7,7 @@
 # television. The invaders, the score and the words are plain rectangles and text; look("arcade") is the glass.
 # Use: tap or press a key to "insert a coin". Press G to take the glass away and see what is really drawn.
 # Try changing: look("arcade") to look("vhs") or look("terminal"); the invader's shape in SHAPE; "INSERT COIN".
-from vfx import *
+from pyvisualfx import *
 
 SHAPE = [
     "..#.....#..",

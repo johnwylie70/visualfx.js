@@ -6,7 +6,7 @@
 # Kaleidoscope: sixty shapes drift about, and a kaleidoscope folds them into a pattern that never repeats.
 # Use: move the mouse or a finger to move the middle of the pattern. Tap to change how many segments it has.
 # Try changing: 60, the shapes; 8, the segments; 12, how fast the pattern turns; take the glow away.
-from vfx import *
+from pyvisualfx import *
 
 colours = ["gold", "deepskyblue", "tomato", "springgreen", "orchid", "white", "darkorange", "royalblue"]
 shapes = []

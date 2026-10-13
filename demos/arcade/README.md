@@ -13,7 +13,7 @@ A look is several effects at once: this one is `glow` and `crt`. `glass.amount =
 
 ## The same scene in Python
 
-`main.py` is the same scene for Pyctures, with `from vfx import *`. The two do the same thing in the same order, so you can read one beside the other.
+`main.py` is the same scene for Pyctures, with `from pyvisualfx import *`. The two do the same thing in the same order, so you can read one beside the other.
 
 ## The effects
 

@@ -17,7 +17,7 @@ None of them is a name pictures.js, synths.js or dials.js already gives a scene 
 **2. Where it is**, in `SIBLINGS`:
 
 ```js
-const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js', effects: 'vfx/vfx.js' }
+const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js', effects: 'visualfx/visualfx.js' }
 ```
 
 (and `loadSibling`'s message has a third word: `which === 'sound' ? 'sound' : which === 'effects' ? 'effects' : 'on-screen controls'`.)
@@ -29,7 +29,7 @@ const wantsEffects = usesAny(code, EFFECT_NAMES)
 const [{ THREE, addons }, soundLib, controlsLib, effectsLib] = await Promise.all([is3D ? loadThree() : {}, wantsSound && loadSibling('sound'), wantsControls && loadSibling('dials'), wantsEffects && loadSibling('effects')])
 ```
 
-and in `sceneUses`: `effects: usesAny(code, EFFECT_NAMES)`, so `pictures build` copies the `vfx` folder for a scene that needs it.
+and in `sceneUses`: `effects: usesAny(code, EFFECT_NAMES)`, so `pictures build` copies the `visualfx` folder for a scene that needs it.
 
 **4. Given to the scene**, after the on-screen controls and before `let last = 0`:
 
@@ -59,13 +59,13 @@ That `dt` is the effects' whole clock. It is the one the scene's `update` was gi
 
 ## scripts/sync-siblings.mjs
 
-- `COPIES` gains `['vfx.js', 'vfx', ['vfx.js', 'LICENSE']]`.
-- The list is every name `vfx.js` exports but `effects` and `version` (this repository's `scripts/names.mjs` prints it), written between the `EFFECT_NAMES` marks by the loop that writes the other two, after `free()`.
+- `COPIES` gains `['visualfx.js', 'visualfx', ['visualfx.js', 'LICENSE']]`.
+- The list is every name `visualfx.js` exports but `effects` and `version` (this repository's `scripts/names.mjs` prints it), written between the `EFFECT_NAMES` marks by the loop that writes the other two, after `free()`.
 
 ## package.json
 
-`"files"` gains `"vfx"`.
+`"files"` gains `"visualfx"`.
 
 ## One thing in dials.js
 
-`onlyCanvas()` there counts every canvas that is not its own layer, so on a page of your own (not in pictures.js, which names the canvas) `dial(…)` after an effect is on finds two canvases and says so. Its filter should also leave out `c.dataset.effectsLayer !== undefined`. vfx.js's own `onlyCanvas()` already leaves dials.js's layer out.
+`onlyCanvas()` there counts every canvas that is not its own layer, so on a page of your own (not in pictures.js, which names the canvas) `dial(…)` after an effect is on finds two canvases and says so. Its filter should also leave out `c.dataset.effectsLayer !== undefined`. visualfx.js's own `onlyCanvas()` already leaves dials.js's layer out.

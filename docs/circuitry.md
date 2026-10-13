@@ -32,16 +32,16 @@ To make a recording react in step, the sound must be stepped with the picture, a
 
 ## Serving the library
 
-- `scripts/sync-pictures.mjs`: pictures.js's new `vfx/` folder comes with the rest of `public/pictures/`; `scene-names.ts` gains `SCENE_EFFECT_NAMES` from the `EFFECT_NAMES` marks, wherever the other two lists are used (detecting a scene, completion).
-- `public/pictures/vfx/vfx.py` from `../vfx-py/src/vfx/__init__.py`, as `pydials.py` is copied; `vfx` in `CIRCUITRY_PROVIDED_MODULES` and in `detect.ts` (a file that imports `vfx` is a scene).
+- `scripts/sync-pictures.mjs`: pictures.js's new `visualfx/` folder comes with the rest of `public/pictures/`; `scene-names.ts` gains `SCENE_EFFECT_NAMES` from the `EFFECT_NAMES` marks, wherever the other two lists are used (detecting a scene, completion).
+- `public/pictures/visualfx/pyvisualfx.py` from `../pyvisualfx/src/pyvisualfx/__init__.py`, as `pydials.py` is copied; `pyvisualfx` in `CIRCUITRY_PROVIDED_MODULES` and in `detect.ts` (a file that imports `pyvisualfx` is a scene).
 - `canvas-runtime-py.ts`: `H_EFFECTS = 13`, and `S.dt` (see docs/pyctures.md). `sound-vendor.ts` gains Pyctures' `effectsKeeper` beside the two it has.
 
 ## The sandbox and the policy
 
 Nothing in them stops the effects. The frame is `sandbox="allow-scripts"` with no origin; WebGL 2 needs neither an origin nor storage, shaders are text compiled by the browser (not script, so `script-src` hashes do not apply), and no worker, fetch or `eval` is used.
 
-- **JavaScript scenes**: `/pictures/` is already a script source, so `/pictures/vfx/vfx.js` loads with no change.
-- **Python scenes**: `pythonSoundPreviewPolicy` adds `<app>/pictures/sound/` and `<app>/pictures/dials/` to `script-src` for a file that imports those. A file that imports `vfx` needs `<app>/pictures/vfx/` there in the same way, and nothing else.
+- **JavaScript scenes**: `/pictures/` is already a script source, so `/pictures/visualfx/visualfx.js` loads with no change.
+- **Python scenes**: `pythonSoundPreviewPolicy` adds `<app>/pictures/sound/` and `<app>/pictures/dials/` to `script-src` for a file that imports those. A file that imports `pyvisualfx` needs `<app>/pictures/visualfx/` there in the same way, and nothing else.
 
 The frame-rate fix for iOS (the editor's `tick` serving `requestAnimationFrame`) carries the effects with it under pictures.js, since they are run from the scene's own frame.
 

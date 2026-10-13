@@ -1,10 +1,10 @@
-# vfx.js
+# visualfx.js
 
 Effects for a scene. Draw some shapes, then turn one on: a kaleidoscope, a glow, trails that spin away into a tunnel, an old television, a glitch. The graphics card does the work, so they are fast, and each is one line.
 
 ![Sixty drifting shapes, folded by a kaleidoscope](docs/images/kaleidoscope.jpg)
 
-It is a sibling of [pictures.js](https://www.circuitry.dev/pictures), [synths.js](../synths.js) and [dials.js](../dials.js), and works with any page that has a canvas. The Python version is [vfx-py](../vfx-py), for Pyctures. (`vfx` is a working name.)
+It is a sibling of [pictures.js](https://www.circuitry.dev/pictures), [synths.js](../synths.js) and [dials.js](../dials.js), and works with any page that has a canvas. The Python version is [pyvisualfx](../pyvisualfx), for Pyctures.
 
 ```js
 function draw() {
@@ -266,7 +266,7 @@ When a scene stops, everything it had on the graphics card is given back; the co
 ```html
 <canvas id="c" width="800" height="500"></canvas>
 <script type="module">
-  import { effects } from "./vfx.js"
+  import { effects } from "./visualfx.js"
   const c = document.getElementById("c"), g = c.getContext("2d")
   const { glow, trails } = effects(c)
   glow(1); trails(1)
@@ -294,7 +294,7 @@ Each is a folder in [`demos/`](demos) with its code, a note and a picture taken 
 ## Working on it
 
 ```
-PLAYWRIGHT=/path/to/node_modules/playwright node scripts/test-vfx.mjs     # the tests, in Chromium and WebKit
+PLAYWRIGHT=/path/to/node_modules/playwright node scripts/test-visualfx.mjs     # the tests, in Chromium and WebKit
 PLAYWRIGHT=… node scripts/shots.mjs                                       # the demos' pictures
 PLAYWRIGHT=… node scripts/gallery.mjs                                     # the picture of every effect
 PLAYWRIGHT=… node scripts/measure.mjs                                     # what chains cost on this computer
@@ -303,6 +303,6 @@ node scripts/serve.mjs                                                    # a se
 
 The tests measure the pixels: a kaleidoscope's symmetry, what a blur takes away, where a hue lands, how fast a trail fades, that order matters and `off()` gives the scene's own canvas back exactly, that nothing is left on the graphics card after forty runs, that a lost context comes back, and that the music's numbers follow a made-up tone and a drum. No sound is made.
 
-pictures.js, Pyctures and Circuitry each need a small change to give a scene these functions with nothing to load: [docs/pictures.js.md](docs/pictures.js.md), [docs/pyctures.md](docs/pyctures.md), [docs/circuitry.md](docs/circuitry.md). Until then a pictures.js scene begins with `const { glow, trails } = await use("vfx.js")`.
+pictures.js, Pyctures and Circuitry each need a small change to give a scene these functions with nothing to load: [docs/pictures.js.md](docs/pictures.js.md), [docs/pyctures.md](docs/pyctures.md), [docs/circuitry.md](docs/circuitry.md). Until then a pictures.js scene begins with `const { glow, trails } = await use("visualfx.js")`.
 
 MIT licence. The shaders are written for this library.

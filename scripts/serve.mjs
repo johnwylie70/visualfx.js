@@ -2,7 +2,7 @@
  * The little server the tests and the pictures are made with: this repository's files, and pictures.js
  * from the folder beside it (or PICTURES=/path/to/pictures.js) under /pictures/, GIVEN THE EFFECTS:
  * its text is changed on the way out as docs/pictures.js.md says it should be changed for good, and
- * /pictures/vfx/vfx.js is this repository's vfx.js. So a scene here uses `glow(1)` with nothing to load.
+ * /pictures/visualfx/visualfx.js is this repository's visualfx.js. So a scene here uses `glow(1)` with nothing to load.
  */
 import { createServer } from 'node:http'
 import { readFile } from 'node:fs/promises'
@@ -22,7 +22,7 @@ export async function picturesWithEffects() {
     text = text.replace(from, to)
   }
   change('/* DIAL_NAMES:END */', `/* DIAL_NAMES:END */\n/* EFFECT_NAMES:BEGIN */\nconst EFFECT_NAMES = ${JSON.stringify(await effectNames())}\n/* EFFECT_NAMES:END */`)
-  change(`const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js' }`, `const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js', effects: 'vfx/vfx.js' }`)
+  change(`const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js' }`, `const SIBLINGS = { sound: 'sound/synths.js', dials: 'dials/dials.js', effects: 'visualfx/visualfx.js' }`)
   change(`const [{ THREE, addons }, soundLib, controlsLib] = await Promise.all([is3D ? loadThree() : {}, wantsSound && loadSibling('sound'), wantsControls && loadSibling('dials')])`,
     `const wantsEffects = usesAny(code, EFFECT_NAMES)\n      const [{ THREE, addons }, soundLib, controlsLib, effectsLib] = await Promise.all([is3D ? loadThree() : {}, wantsSound && loadSibling('sound'), wantsControls && loadSibling('dials'), wantsEffects && loadSibling('effects')])`)
   change(`      let last = 0\n      let counted = 0`, `      // --- EFFECTS (glow, trails, kaleidoscope…): run by the graphics card over what the scene drew, each frame after its draw.
@@ -52,7 +52,7 @@ export async function serve(pages = {}) {
     try {
       let body
       if (path === '/pictures/pictures.js') body = pictures ??= await picturesWithEffects()
-      else if (path === '/pictures/vfx/vfx.js') body = await readFile(join(ROOT, 'vfx.js'))
+      else if (path === '/pictures/visualfx/visualfx.js') body = await readFile(join(ROOT, 'visualfx.js'))
       else body = await readFile(path.startsWith('/pictures/') ? join(PICTURES, path.slice(10)) : join(ROOT, path))
       res.writeHead(200, { 'content-type': TYPES[extname(path)] || 'application/octet-stream', 'cache-control': 'no-store' }).end(body)
     } catch (e) {

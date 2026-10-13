@@ -8,7 +8,7 @@
 # Use: move the mouse or a finger to steer the tunnel. Hold it down to turn the other way.
 # Try changing: 2.5, how long a trail lasts; 1.9, how fast it grows; 50, how fast it turns; 140, how fast the colour moves.
 import math
-from vfx import *
+from pyvisualfx import *
 
 tail = trails(2.5, zoom=1.9, spin=50, hue=140)
 glow(0.5, radius=30)

@@ -8,7 +8,7 @@
 # Use: hold the mouse button or a finger down to shake the signal. Tap the words to change them.
 # Try changing: the titles; 0.35, how bad the tape is; "#ff2a6d" and "#05d9e8", its two colours.
 import math
-from vfx import *
+from pyvisualfx import *
 
 titles = [["SIGNAL", "LOST"], ["GAME", "OVER"], ["PLEASE", "STAND BY"], ["THE", "END"]]
 which = 0

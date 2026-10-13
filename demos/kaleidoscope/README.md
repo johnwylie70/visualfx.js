@@ -15,7 +15,7 @@ Try taking the kaleidoscope line out to see what is really being drawn.
 
 ## The same scene in Python
 
-`main.py` is the same scene for Pyctures, with `from vfx import *`. The two do the same thing in the same order, so you can read one beside the other.
+`main.py` is the same scene for Pyctures, with `from pyvisualfx import *`. The two do the same thing in the same order, so you can read one beside the other.
 
 ## The effects
 
