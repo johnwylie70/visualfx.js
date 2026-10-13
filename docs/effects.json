@@ -2813,11 +2813,11 @@
    "settings": {
     "colour": {
      "kind": "colour",
-     "default": "#ff2ad4"
+     "default": "#ff2a6d"
     },
     "dark": {
      "kind": "colour",
-     "default": "#12103a"
+     "default": "#101a3a"
     },
     "speed": {
      "kind": "float",
@@ -3629,19 +3629,19 @@
    "#0a3a7a"
   ],
   "sunset": [
-   "#1a0a3a",
-   "#6a1a7a",
+   "#0a1030",
+   "#7a1a4a",
    "#e0407a",
    "#ff8a3a",
    "#ffd86a",
-   "#6a1a7a"
+   "#7a1a4a"
   ],
   "neon": [
-   "#0a001a",
-   "#ff1ad9",
+   "#00081a",
+   "#ff1a8c",
    "#1affea",
    "#f6ff1a",
-   "#7a1aff",
+   "#1a6aff",
    "#1affea"
   ],
   "candy": [
@@ -3650,7 +3650,7 @@
    "#8ad4ff",
    "#b8ffd0",
    "#fff0a0",
-   "#d0a0ff"
+   "#a0c0ff"
   ],
   "forest": [
    "#04140a",
@@ -3691,7 +3691,7 @@
   "aurora": [
    "#00ff9a",
    "#00b0ff",
-   "#8a2be2",
+   "#2b6be2",
    "#00ff9a"
   ],
   "gameboy": [

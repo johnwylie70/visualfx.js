@@ -1534,12 +1534,12 @@ A chequered floor rushing towards you under a glowing horizon.
 
 | JavaScript | Python |
 |---|---|
-| `checkerFloor("#ff2ad4")` | `checker_floor("#ff2ad4")` |
+| `checkerFloor("#ff2a6d")` | `checker_floor("#ff2a6d")` |
 
 | Setting | In Python | Starts at | Can be |
 |---|---|---|---|
-| `colour` | `colour` | `"#ff2ad4"` | any colour |
-| `dark` | `dark` | `"#12103a"` | any colour |
+| `colour` | `colour` | `"#ff2a6d"` | any colour |
+| `dark` | `dark` | `"#101a3a"` | any colour |
 | `speed` | `speed` | `1` | -10 to 10 |
 | `amount` | `amount` | `1` | 0 to 1 |
 
