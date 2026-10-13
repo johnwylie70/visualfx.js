@@ -654,8 +654,8 @@ effects(canvas).onFrame((fx) => { if (!n) return; seen.push((n % 2 ? "red" : "bl
     check: (r, asked, after) => r.layers === 2 && after.layers === 0 && after.attached === false },
   { what: 'a page with no host to say when the scene has drawn (the library loaded by the scene itself) still shows each frame\'s own picture',
     source: `const { invert, effects } = await use("/visualfx.js")\nlet n = 0\nconst seen = []\nfunction draw() { n++; background(n % 2 ? "rgb(255,0,0)" : "rgb(0,0,255)") }\ninvert()
-effects(canvas).onFrame((fx) => { seen.push((n % 2 ? "red" : "blue") + ">" + (fx.pixels().data[0] < 128 ? "cyan" : "yellow")); if (seen.length === 8) window.result = { seen, n } })`,
-    check: (r, asked) => r.seen.every((s) => s === 'red>cyan' || s === 'blue>yellow') && new Set(r.seen).size === 2 && r.n === 8 && !asked.some((u) => /pictures\/visualfx/.test(u)) },
+effects(canvas).onFrame((fx) => { seen.push((n % 2 ? "red" : "blue") + ">" + (fx.pixels().data[0] < 128 ? "cyan" : "yellow")); if (seen.length === 8) window.result = { seen: [...seen], n } })`,
+    check: (r, asked) => r.seen.every((s) => s === 'red>cyan' || s === 'blue>yellow') && new Set(r.seen).size === 2 && r.n >= 8 && r.seen.length === r.n && !asked.some((u) => /pictures\/visualfx/.test(u)) },
   { what: 'a 3D scene\'s picture goes through the effects too',
     source: `const { effects } = await use("/pictures/visualfx/visualfx.js")\nconst renderer = new THREE.WebGLRenderer({ canvas })\nconst scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 4 / 3, 0.1, 10)\ncamera.position.z = 3\nscene.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: "red" })))
 function draw() { renderer.render(scene, camera) }\nhue(120)\nlet n = 0\neffects(canvas).onFrame((fx) => { if (++n < 3) return; const p = fx.pixels(), at = (x, y) => [...p.data.slice((y * p.width + x) * 4, (y * p.width + x) * 4 + 3)]; window.result = { middle: at(p.width >> 1, p.height >> 1), corner: at(2, 2) } })`,
