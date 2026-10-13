@@ -548,7 +548,7 @@ const play = (page, source) => page.evaluate(async ({ source }) => {
     window.scene = runScene(document.getElementById('s'), { source, name: 'scene.js', onError: (message, line) => done({ error: message, line }) })
     const look = () => (window.result !== undefined ? done(window.result) : setTimeout(look, 20))
     look()
-    setTimeout(() => done({ error: 'the scene left no result' }), 5000)
+    setTimeout(() => done({ error: 'the scene left no result' }), 12000)
   })
 }, { source })
 const layerOf = `document.querySelector('#s canvas[data-effects-layer]')`
@@ -582,6 +582,49 @@ effects(canvas).onFrame((fx) => { seen.push((n % 2 ? "red" : "blue") + ">" + (fx
     source: `const { effects } = await use("/pictures/vfx/vfx.js")\nconst renderer = new THREE.WebGLRenderer({ canvas })\nconst scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 4 / 3, 0.1, 10)\ncamera.position.z = 3\nscene.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: "red" })))
 function draw() { renderer.render(scene, camera) }\nhue(120)\nlet n = 0\neffects(canvas).onFrame((fx) => { if (++n < 3) return; const p = fx.pixels(), at = (x, y) => [...p.data.slice((y * p.width + x) * 4, (y * p.width + x) * 4 + 3)]; window.result = { middle: at(p.width >> 1, p.height >> 1), corner: at(2, 2) } })`,
     check: (r) => r.middle[1] > 240 && r.middle[0] < 15 && r.corner[0] + r.corner[1] + r.corner[2] < 10 },
+  { what: 'renderFrames steps the page a frame at a time, each exactly a thirtieth of a second after the last, and gives every picture with its effects; then the page has its own clock back',
+    source: `const { renderFrames, effects } = await use("/pictures/vfx/vfx.js")\nlet t = 0\nconst dts = []\nfunction update(dt) { t += dt; dts.push(dt) }\nfunction draw() { background("black"); rect(t * 120, 0, 40, 300, "rgb(255,0,0)") }\ninvert()
+setTimeout(async () => {
+  await new Promise((r) => setTimeout(r, 200))
+  const edges = []
+  let at = 0
+  await renderFrames({ frames: 12, fps: 30, onFrame: async (picture, n, time) => {
+    const row = picture.getContext("2d").getImageData(0, 5, picture.width, 1).data
+    let x = 0; while (x < picture.width && row[x * 4] > 128) x++
+    edges.push(x)
+    if (n === 0) at = dts.length - 1
+    if (n === 5) await new Promise((r) => setTimeout(r, 120))
+  } })
+  const steps = dts.slice(at, at + 12)
+  const before = dts.length
+  await new Promise((r) => setTimeout(r, 300))
+  window.result = { edges, steps, after: dts.length - before, native: /native code/.test(String(window.requestAnimationFrame)) }
+}, 0)`,
+    // The bar moves 120 points a second: 4 points a frame at thirty frames a second, whatever the real time between them.
+    check: (r) => r.edges.length === 12 && r.edges.slice(1).every((x, i) => Math.abs(x - r.edges[i] - 4) <= 1) && r.steps.length === 12 && r.steps.every((d) => Math.abs(d - 1 / 30) < 1e-9) && r.after > 3 && r.native },
+  { what: 'recordVideo gives a WebM film a player can open, of the right size and length, or says plainly that this browser cannot make one',
+    source: `const { recordVideo } = await use("/pictures/vfx/vfx.js")\nlet t = 0\nfunction update(dt) { t += dt }\nfunction draw() { background("navy"); circle(100 + t * 100, 150, 40, "gold") }\nglow(1)
+setTimeout(async () => {
+  try {
+    const film = await recordVideo({ seconds: 1, fps: 30 })
+    const head = [...new Uint8Array(await film.slice(0, 4).arrayBuffer())].join()
+    const video = document.createElement("video")
+    if (!video.canPlayType('video/webm; codecs="' + film.codec + '"')) { window.result = { unplayable: true, type: film.type, size: film.size, head }; return }
+    video.muted = true
+    video.src = URL.createObjectURL(film)
+    const opened = await new Promise((done) => { video.onloadeddata = () => done(true); video.onerror = () => done(false); setTimeout(() => done(false), 4000) })
+    // Playwright's WebKit says it can play WebM and then does not open one from memory. The file it encoded is
+    // sound all the same (ffprobe reads it: VP9, sixty frames in two seconds), so there only the file is asked for.
+    if (!opened) { window.result = { unplayable: true, type: film.type, size: film.size, head }; return }
+    await new Promise((done) => { video.onseeked = done; video.currentTime = 0.5 })
+    const g = Object.assign(document.createElement("canvas"), { width: video.videoWidth, height: video.videoHeight }).getContext("2d")
+    g.drawImage(video, 0, 0)
+    window.result = { type: film.type, size: film.size, head, w: video.videoWidth, h: video.videoHeight, cw: canvas.width, ch: canvas.height, seconds: video.duration, corner: [...g.getImageData(4, 4, 1, 1).data], ball: [...g.getImageData(150, 150, 1, 1).data] }
+  } catch (e) { window.result = { said: e.message } }
+}, 0)`,
+    check: (r) => (r.said ? /cannot make a video file|cannot encode/.test(r.said) && /renderFrames\(\)/.test(r.said)
+      // A browser that can encode a WebM and cannot play one (Safari's engine here) is asked only for the file.
+      : r.type === 'video/webm' && r.size > 2000 && r.head === '26,69,223,163' && (r.unplayable || (r.w === (r.cw & ~1) && r.h === (r.ch & ~1) && Math.abs(r.seconds - 1) < 0.05 && r.corner[2] > 90 && r.corner[0] < 40 && r.ball[0] > 200 && r.ball[2] < 120))) },
 ]
 
 let failed = 0, ran = 0

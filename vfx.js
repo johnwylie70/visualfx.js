@@ -741,6 +741,10 @@ class Pipeline {
     this.W = this.H = 1
     this.quality = 'auto'
     this.scale = 1
+    this.sized = false
+    this.least = 0.25
+    this.handover = 0
+    this.small = null // a 2D canvas the scene's picture is made smaller on, before it is handed over
     this.slow = 0
     this.best = Infinity
     this.pace = 0
@@ -1012,14 +1016,17 @@ class Pipeline {
     const { canvas, layer, gl } = this
     const W = canvas.clientWidth || canvas.width, H = canvas.clientHeight || canvas.height
     this.W = W; this.H = H
-    let scale = typeof this.quality === 'number' ? clamp(this.quality, 0.1, 1) : this.scale
-    if (this.quality === 'auto') {
-      // A tablet's screen has more pixels than its graphics card can fill several times a frame.
+    if (this.quality === 'auto' && !this.sized) {
+      // A tablet's screen has more pixels than its graphics card can fill several times a frame: it starts
+      // with about as many as a 1080p picture. From there `watch` takes it down if the device is not keeping up.
+      this.sized = true
       let coarse = false
       try { coarse = matchMedia('(pointer: coarse)').matches } catch (e) { /* no such question here */ }
-      const most = coarse ? 2.6e6 : 9e6
-      scale = Math.min(this.scale, Math.max(0.5, Math.sqrt(most / Math.max(1, canvas.width * canvas.height))))
+      this.scale = Math.min(1, Math.sqrt((coarse ? 2.1e6 : 9e6) / Math.max(1, canvas.width * canvas.height)))
     }
+    // Never fewer than a pixel for each of the scene's points.
+    this.least = Math.min(1, Math.max(0.25, W / Math.max(1, canvas.width)))
+    const scale = typeof this.quality === 'number' ? clamp(this.quality, 0.1, 1) : Math.max(this.least, this.scale)
     const w = Math.max(1, Math.round(canvas.width * scale)), h = Math.max(1, Math.round(canvas.height * scale))
     if (layer.style.left !== canvas.offsetLeft + 'px') layer.style.left = canvas.offsetLeft + 'px'
     if (layer.style.top !== canvas.offsetTop + 'px') layer.style.top = canvas.offsetTop + 'px'
@@ -1035,29 +1042,53 @@ class Pipeline {
     this.main = [this.texture(w, h), this.texture(w, h)]
   }
 
-  /** The scene's canvas as a picture on the graphics card. */
+  /**
+   * The scene's canvas as a picture on the graphics card. Some browsers hand it over without touching the
+   * pixels; Safari's engine reads every one back first, which at a tablet's full size is most of a frame.
+   * So when the effects work on fewer pixels than the canvas has, it is made that small first (a 2D
+   * canvas-to-canvas copy, which the card does), and only the small one is handed over.
+   */
   upload() {
     const gl = this.gl, c = this.canvas
-    if (!this.input || this.input.w !== c.width || this.input.h !== c.height) {
-      if (this.input) { gl.deleteTexture(this.input.tex); this.counts.textures-- }
-      this.input = this.texture(0, 0, { fbo: false })
-      this.input.w = c.width; this.input.h = c.height
+    const t0 = performance.now()
+    let from = c
+    if (this.w < c.width * 0.95) {
+      if (!this.small) this.small = document.createElement('canvas').getContext('2d')
+      const s = this.small
+      if (s.canvas.width !== this.w || s.canvas.height !== this.h) { s.canvas.width = this.w; s.canvas.height = this.h }
+      s.globalCompositeOperation = 'copy'
+      s.drawImage(c, 0, 0, this.w, this.h)
+      from = s.canvas
     }
+    if (!this.input) this.input = this.texture(0, 0, { fbo: false })
+    this.input.w = from.width; this.input.h = from.height
     gl.bindTexture(gl.TEXTURE_2D, this.input.tex)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, from)
+    // How long the hand-over held the page up (nothing, where the card does it by itself).
+    const took = performance.now() - t0
+    this.handover += (took - this.handover) * 0.2
   }
 
-  /** Is the device keeping up? When frames have been late for a while, the effects work on fewer pixels. */
+  /**
+   * Is the device keeping up? When the hand-over takes more than a few milliseconds, or frames have been
+   * late for a while, the effects work on fewer pixels. Only the wall clock is used here, and only for
+   * this: under a recorder's stepped clock nothing is ever late, so a recording keeps every pixel.
+   */
   watch() {
     const now = performance.now()
     const gap = now - this.clock
     this.clock = now
-    if (this.quality !== 'auto' || !(gap > 0) || gap > 250) { this.slow = 0; return }
+    if (this.quality !== 'auto' || !(gap > 0) || gap > 250 || this.scale <= this.least) { this.slow = 0; return }
+    if (this.handover > 4 && this.frames > 10) {
+      this.scale = Math.max(this.least, this.scale * Math.sqrt(3 / this.handover))
+      this.handover = 0
+      return
+    }
     this.pace = this.pace ? this.pace + (gap - this.pace) * 0.1 : gap
     if (this.frames > 30) this.best = Math.min(this.best, this.pace)
     this.slow = this.pace > this.best * 1.4 ? this.slow + 1 : 0
-    if (this.slow > 45 && this.scale > 0.5) {
-      this.scale = Math.max(0.5, this.scale * 0.75)
+    if (this.slow > 45) {
+      this.scale = Math.max(this.least, this.scale * 0.75)
       this.slow = 0
     }
   }
@@ -1368,6 +1399,7 @@ function api(pipe) {
       if (value !== 'auto' && !(typeof value === 'number' && value > 0)) throw new Error('effectsQuality() is given a number from 0.25 to 1, or "auto"')
       pipe.quality = value
       pipe.scale = 1
+      pipe.sized = false
       pipe.best = Infinity
     },
     // --- for a host (pictures.js, Pyctures): the frame, the picture, and the end
@@ -1375,7 +1407,7 @@ function api(pipe) {
     /** Called each time a frame's picture is on the screen, when `pixels()` can be read (a recorder's moment). */
     onFrame(fn) { pipe.after = fn },
     pixels: () => pipe.pixels(),
-    stats: () => ({ ...pipe.counts, passes: pipe.passes, effects: pipe.effects.length, width: pipe.w, height: pipe.h, scale: pipe.w && pipe.canvas.width ? pipe.w / pipe.canvas.width : 1, float: pipe.float, context: !!pipe.gl, lost: pipe.lost, time: pipe.time, frames: pipe.frames }),
+    stats: () => ({ ...pipe.counts, handover: pipe.handover, passes: pipe.passes, effects: pipe.effects.length, width: pipe.w, height: pipe.h, scale: pipe.w && pipe.canvas.width ? pipe.w / pipe.canvas.width : 1, float: pipe.float, context: !!pipe.gl, lost: pipe.lost, time: pipe.time, frames: pipe.frames }),
     close: () => pipe.close(),
     pipeline: pipe,
     // --- for a host that keeps the scene's code somewhere else (Python): effects by number, one call each
@@ -1428,6 +1460,143 @@ function onlyCanvas() {
     : 'There is no canvas on this page to put effects on')
 }
 
+// --------------------------------------------------------------------------------------------
+// FILM: the scene stepped a frame at a time, each frame exactly 1/fps after the last however long it took
+// to draw, for a page that has no recorder of its own (Circuitry has one, and steps the page the same way).
+/**
+ * The next frames of the page, one at a time: `await renderFrames({ seconds: 3, fps: 60, onFrame })`.
+ * `onFrame(canvas, n, time)` is given each finished picture (the scene, its effects and anything else
+ * laid over it) on one canvas that is used again for the next, and may be awaited. With no `onFrame` it
+ * gives back a list of pictures (ImageBitmap), which for a long film is a great deal of memory.
+ * While it runs, the page's clock is this one: requestAnimationFrame and performance.now are stepped.
+ */
+async function renderFrames({ seconds = 3, fps = 60, frames = Math.round(seconds * fps), onFrame = null, canvas = null } = {}) {
+  canvas ||= onlyCanvas()
+  const real = { raf: window.requestAnimationFrame, caf: window.cancelAnimationFrame, now: performance.now }
+  // The frame the browser has already promised is let through first, so everything waiting is waiting on this clock.
+  await new Promise((done) => real.raf.call(window, () => setTimeout(done, 0)))
+  let waiting = [], ids = 0, clock = 0
+  window.requestAnimationFrame = (fn) => { waiting.push([++ids, fn]); return -ids }
+  window.cancelAnimationFrame = (id) => { if (id < 0) waiting = waiting.filter(([n]) => n !== -id); else real.caf.call(window, id) }
+  performance.now = () => clock || real.now.call(performance)
+  const out = Object.assign(document.createElement('canvas'), { width: canvas.width, height: canvas.height })
+  const g = out.getContext('2d')
+  const kept = []
+  try {
+    // One real frame lets what was already asked of the browser's own clock ask again of this one.
+    // This clock starts at that frame's own time, so the first step is exactly 1/fps like every other.
+    await new Promise((done) => real.raf.call(window, (now) => { clock = now; setTimeout(done, 0) }))
+    for (let n = 0; n < frames; n++) {
+      clock += 1000 / fps
+      const due = waiting
+      waiting = []
+      for (const [, fn] of due) fn(clock)
+      // Copied now, in the same task as the drawing: a graphics-card canvas keeps its picture no longer.
+      g.fillStyle = '#000'
+      g.fillRect(0, 0, out.width, out.height)
+      const box = canvas.getBoundingClientRect()
+      for (const c of canvas.parentElement ? canvas.parentElement.querySelectorAll('canvas') : [canvas]) {
+        if (!c.width || !c.height || getComputedStyle(c).display === 'none' || getComputedStyle(c).visibility === 'hidden') continue
+        const b = c.getBoundingClientRect(), k = out.width / (box.width || out.width)
+        g.drawImage(c, (b.left - box.left) * k, (b.top - box.top) * k, b.width * k, b.height * k)
+      }
+      if (onFrame) await onFrame(out, n, (n + 1) / fps)
+      else kept.push(await createImageBitmap(out))
+      // What the scene awaits between frames (a promise, a timer that is due) is given its turn.
+      await new Promise((done) => setTimeout(done, 0))
+    }
+  } finally {
+    window.requestAnimationFrame = real.raf
+    window.cancelAnimationFrame = real.caf
+    performance.now = real.now
+    for (const [, fn] of waiting) real.raf.call(window, fn)
+  }
+  return kept
+}
+
+/**
+ * A film of the scene as a WebM file, every frame exactly 1/fps apart: `const film = await recordVideo({ seconds: 5, fps: 60 })`
+ * gives a Blob (`saveVideo(film)` downloads it). It needs a browser that can encode video (WebCodecs); there is no sound in it.
+ */
+async function recordVideo({ seconds = 5, fps = 60, bitrate = 0, canvas = null } = {}) {
+  canvas ||= onlyCanvas()
+  if (typeof VideoEncoder !== 'function' || typeof VideoFrame !== 'function') throw new Error('This browser cannot make a video file (it has no VideoEncoder). renderFrames() gives the frames one by one instead')
+  // An encoder wants a picture with an even number of pixels each way.
+  const w = canvas.width & ~1, h = canvas.height & ~1
+  let codec = ''
+  for (const c of ['vp09.00.40.08', 'vp8']) {
+    try { if ((await VideoEncoder.isConfigSupported({ codec: c, width: w, height: h })).supported) { codec = c; break } } catch (e) { /* not this one */ }
+  }
+  if (!codec) throw new Error(`This browser cannot encode a WebM video of ${w} by ${h} pixels. renderFrames() gives the frames one by one instead`)
+  const chunks = []
+  let failed = null
+  const encoder = new VideoEncoder({
+    output: (chunk) => { const data = new Uint8Array(chunk.byteLength); chunk.copyTo(data); chunks.push({ data, key: chunk.type === 'key', time: Math.round(chunk.timestamp / 1000) }) },
+    error: (e) => { failed = e },
+  })
+  encoder.configure({ codec, width: w, height: h, framerate: fps, bitrate: bitrate || Math.round(w * h * fps * 0.12) })
+  const even = Object.assign(document.createElement('canvas'), { width: w, height: h }).getContext('2d')
+  await renderFrames({ seconds, fps, canvas, onFrame: async (picture, n) => {
+    even.drawImage(picture, 0, 0)
+    const frame = new VideoFrame(even.canvas, { timestamp: Math.round(n * 1e6 / fps), duration: Math.round(1e6 / fps) })
+    encoder.encode(frame, { keyFrame: n % Math.round(fps * 2) === 0 })
+    frame.close()
+    // The encoder is not given frames faster than it can take them.
+    while (encoder.encodeQueueSize > 6) await new Promise((done) => setTimeout(done, 1))
+  } })
+  await encoder.flush()
+  encoder.close()
+  if (failed) throw new Error(`The video could not be encoded: ${failed.message}`)
+  const film = webm(chunks, { codec: codec === 'vp8' ? 'V_VP8' : 'V_VP9', width: w, height: h, fps })
+  film.codec = codec === 'vp8' ? 'vp8' : 'vp9'
+  return film
+}
+
+/** A WebM file from encoded frames: the few parts a player needs, each a name, a length and what is in it. */
+function webm(chunks, { codec, width, height, fps }) {
+  const bytes = (n, size) => { const out = []; for (let i = size - 1; i >= 0; i--) out.push(Math.floor(n / 2 ** (8 * i)) & 255); return out }
+  const whole = (n) => bytes(n, Math.max(1, Math.ceil(Math.log2(n + 1) / 8)))
+  const float = (n) => [...new Uint8Array(new Float64Array([n]).buffer).reverse()]
+  const text = (t) => [...new TextEncoder().encode(t)]
+  // A part: its name, how long it is (eight bytes, the first marking that there are eight) and its content.
+  const part = (id, ...content) => {
+    const body = content.map((c) => (c instanceof Uint8Array ? c : new Uint8Array(c)))
+    const size = body.reduce((n, b) => n + b.length, 0)
+    const out = new Uint8Array(id.length + 8 + size)
+    out.set(id, 0)
+    out.set([1, ...bytes(size, 7)], id.length)
+    let at = id.length + 8
+    for (const b of body) { out.set(b, at); at += b.length }
+    return out
+  }
+  const head = part([0x1a, 0x45, 0xdf, 0xa3], part([0x42, 0x86], [1]), part([0x42, 0xf7], [1]), part([0x42, 0xf2], [4]), part([0x42, 0xf3], [8]), part([0x42, 0x82], text('webm')), part([0x42, 0x87], [2]), part([0x42, 0x85], [2]))
+  const last = chunks.length ? chunks[chunks.length - 1].time : 0
+  const info = part([0x15, 0x49, 0xa9, 0x66], part([0x2a, 0xd7, 0xb1], whole(1000000)), part([0x4d, 0x80], text('vfx.js')), part([0x57, 0x41], text('vfx.js')), part([0x44, 0x89], float(last + 1000 / fps)))
+  const tracks = part([0x16, 0x54, 0xae, 0x6b], part([0xae], part([0xd7], [1]), part([0x73, 0xc5], [1]), part([0x83], [1]), part([0x86], text(codec)), part([0x23, 0xe3, 0x83], whole(Math.round(1e9 / fps))),
+    part([0xe0], part([0xb0], whole(width)), part([0xba], whole(height)))))
+  // Frames are kept in groups that each begin with a whole picture: a player can start at any group.
+  const clusters = []
+  let group = null
+  for (const c of chunks) {
+    if (!group || c.key || c.time - group.time > 30000) { group = { time: c.time, blocks: [] }; clusters.push(group) }
+    const block = new Uint8Array(4 + c.data.length)
+    block.set([0x81, ...bytes(c.time - group.time, 2), c.key ? 0x80 : 0], 0)
+    block.set(c.data, 4)
+    group.blocks.push(part([0xa3], block))
+  }
+  const body = [info, tracks, ...clusters.map((g) => part([0x1f, 0x43, 0xb6, 0x75], part([0xe7], whole(g.time)), ...g.blocks))]
+  return new Blob([head, part([0x18, 0x53, 0x80, 0x67], ...body)], { type: 'video/webm' })
+}
+
+/** Save a film (or any Blob) as a file the browser downloads: saveVideo(film, "my-scene.webm"). */
+function saveVideo(film, name = 'scene.webm') {
+  const link = Object.assign(document.createElement('a'), { href: URL.createObjectURL(film), download: name })
+  document.body.append(link)
+  link.click()
+  link.remove()
+  setTimeout(() => URL.revokeObjectURL(link.href), 10000)
+}
+
 // The same functions with no canvas named: for a page (and a pictures.js scene) with one canvas.
 const on = (name) => (...args) => effects()[name](...args)
 const kaleidoscope = on('kaleidoscope'), mirror = on('mirror'), pixelate = on('pixelate'), waves = on('waves'), ripple = on('ripple'), wobble = on('wobble')
@@ -1444,5 +1613,6 @@ export {
   effects, kaleidoscope, mirror, pixelate, waves, ripple, wobble, swirl, fisheye, bulge, tunnel, tile, zoomBlur, spinBlur, rgbSplit,
   hue, saturate, brighten, contrast, invert, posterize, tint, duotone, colourCycle, colorCycle, scanlines, crt, glitch, grain, vignette, edges,
   dots, halftone, letters, plasma, starfield, metaballs, flow, blur, glow, bloom, trails,
-  shader, look, clearEffects, listenTo, react, effectsQuality, bass, mids, highs, loudness, pulse, lookNames, effectNames, paletteNames, version,
+  shader, look, clearEffects, listenTo, react, effectsQuality, bass, mids, highs, loudness, pulse, lookNames, effectNames, paletteNames,
+  renderFrames, recordVideo, saveVideo, version,
 }
