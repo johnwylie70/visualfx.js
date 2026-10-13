@@ -45,7 +45,7 @@ function update(dt) {
 An effect's settings are plain properties: read them, set them, add to them, every frame if you like. Give one a function and it is asked every frame:
 
 ```js
-pattern.segments = () => 4 + 2 * Math.floor(time)
+pattern.zoom = () => 1 + bass()          // asked every frame: here, the music's bass
 ```
 
 Lengths are in the same points as the rest of your scene and angles are in degrees, so a scene looks the same on a phone and on a big screen.
