@@ -261,6 +261,12 @@ Each is a folder in [`demos/`](demos) with its code, a note and a picture taken 
 | [arcade](demos/arcade) ![](demos/arcade/thumbnail.jpg) | [visualiser](demos/visualiser) ![](demos/visualiser/thumbnail.jpg) |
 | [finger-paint](demos/finger-paint) ![](demos/finger-paint/thumbnail.jpg) | [glitch-title](demos/glitch-title) ![](demos/glitch-title/thumbnail.jpg) |
 
+## Megademo
+
+[![Megademo: a rotozoom: one small picture turned, zoomed and repeated by an effect](docs/images/megademo.jpg)](https://github.com/johnwylie70/megademo)
+
+[Megademo](https://github.com/johnwylie70/megademo) is a demo in the style of the ones made on the C64 and Amiga, made in Circuitry Studio. About forty of these effects, never more than four at once, make up a whole demo cut to a chiptune. It is one file, `main.js`, and it is worth reading for how it is done. [Watch it on YouTube](https://youtu.be/6fKMwrOik5k).
+
 ## Working on it
 
 ```
